@@ -1,26 +1,45 @@
+//Rules to follow//
+//Model names should be singular and start with an uppercase letter.
+//Field names should be in camelCase.
+//Use appropriate data types for each field.
+//Define relationships between models using @relation attribute.
+// & write in the first model the relation field as an array if one-to-many.
 
 generator client {
   provider     = "prisma-client-js"
   moduleFormat = "cjs"
 }
 
-
 datasource db {
   provider = "postgresql"
 }
 
+//Models
 model User {
-  id    Int     @default(autoincrement()) @id
-  email String  @unique
-  name  String?
-  posts Post[]
+  id           Int            @id @default(autoincrement())
+  uuid         String         @unique @default(uuid()) @db.Uuid
+  email        String         @unique
+  name         String
+  phone        String
+  address      String
+  profileImage String
+  nidImage     String
+  businessInfo BusinessInfo[]
 }
 
-model Post {
-  id        Int      @default(autoincrement()) @id
-  title     String
-  content   String?
-  published Boolean? @default(false)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+model BusinessInfo {
+  id                     Int     @id @default(autoincrement())
+  businessName           String
+  businessLogo           String
+  businessType           String
+  businessAddress        String
+  businessPhone          String
+  businessEmail          String
+  businessWebsite        String?
+  businessTradeLicense   String
+  businessWareHouse      String?
+  businessStoreFrontLink String
+  userId                 Int
+  user                   User    @relation(fields: [userId], references: [id])
 }
+
