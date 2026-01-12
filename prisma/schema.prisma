@@ -27,8 +27,14 @@ model User {
   businessInfo BusinessInfo[]
 }
 
+model BusinessCategory {
+  id                   Int            @id @default(autoincrement())
+  businessCategoryName String
+  businessInfo         BusinessInfo[]
+}
+
 model BusinessInfo {
-  id                     Int     @id @default(autoincrement())
+  id                     Int              @id @default(autoincrement())
   businessName           String
   businessLogo           String
   businessType           String
@@ -39,7 +45,10 @@ model BusinessInfo {
   businessTradeLicense   String
   businessWareHouse      String?
   businessStoreFrontLink String
+  //businessCategoryID
+  businessCategoryId     Int
+  businessCategory       BusinessCategory @relation(fields: [businessCategoryId], references: [id])
+  //userID
   userId                 Int
-  user                   User    @relation(fields: [userId], references: [id])
+  user                   User             @relation(fields: [userId], references: [id])
 }
-
