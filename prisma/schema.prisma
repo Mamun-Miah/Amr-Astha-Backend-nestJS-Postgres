@@ -16,18 +16,18 @@ datasource db {
 
 //Models
 model User {
-  id            Int            @id @default(autoincrement())
-  uuid          String         @unique @default(uuid()) @db.Uuid
-  email         String         @unique
+  id            Int             @id @default(autoincrement())
+  uuid          String          @unique @default(uuid()) @db.Uuid
+  email         String          @unique
   name          String
   phone         String
   address       String
   profileImage  String
   nidImage      String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   businessInfo  BusinessInfo[]
-  linkCreations ProductOrder[]
+  linkCreations OrderCreation[]
 }
 
 model BusinessCategory {
@@ -59,7 +59,7 @@ model BusinessInfo {
   user                   User             @relation(fields: [userId], references: [id])
 }
 
-model ProductOrder {
+model OrderCreation {
   id                 Int           @id @default(autoincrement())
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
@@ -82,11 +82,13 @@ model ProductOrder {
 }
 
 model linkCreated {
-  id        Int          @id @default(autoincrement())
-  link      String
-  createdAt DateTime     @default(now())
-  expiry    DateTime
+  id            Int           @id @default(autoincrement())
+  uuid          String          @unique @default(uuid()) @db.Uuid
+  link          String
+  createdAt     DateTime      @default(now())
+  expiry        DateTime
   //Relations
-  productId Int
-  product   ProductOrder @relation(fields: [productId], references: [id])
+  orderId       Int
+  ordercreation OrderCreation @relation(fields: [orderId], references: [id])
 }
+
