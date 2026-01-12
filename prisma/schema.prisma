@@ -16,15 +16,18 @@ datasource db {
 
 //Models
 model User {
-  id           Int            @id @default(autoincrement())
-  uuid         String         @unique @default(uuid()) @db.Uuid
-  email        String         @unique
-  name         String
-  phone        String
-  address      String
-  profileImage String
-  nidImage     String
-  businessInfo BusinessInfo[]
+  id            Int            @id @default(autoincrement())
+  uuid          String         @unique @default(uuid()) @db.Uuid
+  email         String         @unique
+  name          String
+  phone         String
+  address       String
+  profileImage  String
+  nidImage      String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  businessInfo  BusinessInfo[]
+  linkCreations ProductOrder[]
 }
 
 model BusinessCategory {
@@ -45,10 +48,45 @@ model BusinessInfo {
   businessTradeLicense   String
   businessWareHouse      String?
   businessStoreFrontLink String
+  //Date
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
   //businessCategoryID
   businessCategoryId     Int
   businessCategory       BusinessCategory @relation(fields: [businessCategoryId], references: [id])
   //userID
   userId                 Int
   user                   User             @relation(fields: [userId], references: [id])
+}
+
+model ProductOrder {
+  id                 Int           @id @default(autoincrement())
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  orderDate          String
+  deliveryDate       String
+  productName        String
+  productDescription String
+  productPrice       Float
+  productQuantity    Int
+  customerName       String
+  customerEmail      String?
+  customerPhone      String
+  customerAddress    String
+  invoiceNumber      String
+  invoice            String
+  profofDelivery     String
+  userId             Int
+  user               User          @relation(fields: [userId], references: [id])
+  linkCreateds       linkCreated[]
+}
+
+model linkCreated {
+  id        Int          @id @default(autoincrement())
+  link      String
+  createdAt DateTime     @default(now())
+  expiry    DateTime
+  //Relations
+  productId Int
+  product   ProductOrder @relation(fields: [productId], references: [id])
 }
