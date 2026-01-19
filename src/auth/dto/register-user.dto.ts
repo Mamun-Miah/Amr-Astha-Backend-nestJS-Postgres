@@ -6,7 +6,7 @@ import {
   Matches,
 } from 'class-validator';
 
-export class CreateUserDto {
+export class RegisterUserDto {
   @IsString()
   @IsNotEmpty()
   name: string;
