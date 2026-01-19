@@ -16,18 +16,36 @@ datasource db {
 
 //Models
 model User {
-  id            Int             @id @default(autoincrement())
-  uuid          String          @unique @default(uuid()) @db.Uuid
-  email         String          @unique
-  name          String
-  phone         String
-  address       String
-  profileImage  String
-  nidImage      String
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id      Int     @id @default(autoincrement())
+  uuid    String  @unique @default(uuid()) @db.Uuid
+  name    String
+  email   String  @unique
+  phone   String?
+  address String?
+
+  passwordHash String?
+  provider     AuthProvider
+  providerId   String?
+
+  profileImageUrl String?
+  nidImageUrl     String?
+
+  isEmailVerified Boolean @default(false)
+  isPhoneVerified Boolean @default(false)
+  isActive        Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   businessInfo  BusinessInfo[]
   linkCreations OrderCreation[]
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  FACEBOOK
+  GITHUB
 }
 
 model BusinessCategory {
@@ -36,16 +54,21 @@ model BusinessCategory {
   businessInfo         BusinessInfo[]
 }
 
+enum BusinessTypeEnum {
+  WHOLESALE
+  RETAIL
+}
+
 model BusinessInfo {
   id                     Int              @id @default(autoincrement())
   businessName           String
-  businessLogo           String
-  businessType           String
+  businessLogoUrl        String?
+  businessType           BusinessTypeEnum
   businessAddress        String
-  businessPhone          String
-  businessEmail          String
+  businessPhone          String           @unique
+  businessEmail          String           @unique
   businessWebsite        String?
-  businessTradeLicense   String
+  businessTradeLicense   String?
   businessWareHouse      String?
   businessStoreFrontLink String
   //Date
@@ -63,8 +86,8 @@ model OrderCreation {
   id                 Int           @id @default(autoincrement())
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
-  orderDate          String
-  deliveryDate       String
+  orderDate          DateTime
+  deliveryDate       DateTime
   productName        String
   productDescription String
   productPrice       Float
@@ -73,22 +96,62 @@ model OrderCreation {
   customerEmail      String?
   customerPhone      String
   customerAddress    String
-  invoiceNumber      String
-  invoice            String
-  profofDelivery     String
+  invoiceNumber      String        @unique
+  invoiceUrl         String
+  profOfDelivery     String
+  //relations
   userId             Int
   user               User          @relation(fields: [userId], references: [id])
-  linkCreateds       linkCreated[]
+  linkCreated        LinkCreated[]
 }
 
-model linkCreated {
-  id            Int           @id @default(autoincrement())
-  uuid          String          @unique @default(uuid()) @db.Uuid
+model LinkCreated {
+  id            Int            @id @default(autoincrement())
+  uuid          String         @unique @default(uuid()) @db.Uuid
   link          String
-  createdAt     DateTime      @default(now())
+  createdAt     DateTime       @default(now())
   expiry        DateTime
   //Relations
   orderId       Int
-  ordercreation OrderCreation @relation(fields: [orderId], references: [id])
+  orderCreation OrderCreation  @relation(fields: [orderId], references: [id])
+  sellerReview  SellerReview[]
+  sellerScores  SellerScore[]
 }
 
+enum ReviewEnum {
+  COMPLETED_AS_AGREED
+  COMPLETED_WITH_ISSUE
+  NOT_COMPLETED
+}
+
+model SellerReview {
+  id          Int         @id @default(autoincrement())
+  review      ReviewEnum
+  complain    String?
+  createdAt   DateTime    @default(now())
+  attachment  String?
+  //relations
+  orderId     Int
+  linkCreated LinkCreated @relation(fields: [orderId], references: [id])
+  disputes    Disputes[]
+}
+
+model Disputes {
+  id             Int          @id @default(autoincrement())
+  issue          String
+  description    String?
+  attachment     String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  //relations
+  sellerReviewId Int
+  sellerReview   SellerReview @relation(fields: [sellerReviewId], references: [id])
+}
+
+model SellerScore {
+  id            Int         @id @default(autoincrement())
+  score         Int
+  createdAt     DateTime    @default(now())
+  linkCreatedId Int
+  linkCreated   LinkCreated @relation(fields: [linkCreatedId], references: [id])
+}
