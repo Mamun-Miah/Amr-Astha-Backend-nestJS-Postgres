@@ -10,6 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+// 1. Import Pino decorators
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 export const roundsOfHashing = 12;
 
@@ -18,6 +20,9 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    //Inject the logger with the class context
+    @InjectPinoLogger(AuthService.name)
+    private readonly logger: PinoLogger,
   ) {}
 
   async signup(dto: RegisterUserDto) {
@@ -26,6 +31,11 @@ export class AuthService {
     });
 
     if (existingUser) {
+      // Log conflict attempts (Warning level)
+      this.logger.warn(
+        { email: dto.email },
+        'Signup attempt failed: Email already exists',
+      );
       throw new BadRequestException('Email already exists');
     }
 
@@ -41,6 +51,12 @@ export class AuthService {
       },
     });
 
+    // Log successful creation (Info level)
+    this.logger.info(
+      { userId: user.id, email: user.email },
+      'User successfully registered',
+    );
+
     const { passwordHash: _, ...result } = user;
     return result;
   }
@@ -51,6 +67,8 @@ export class AuthService {
     });
 
     if (!user || !user.passwordHash) {
+      // Security log: User not found
+      this.logger.warn({ email: dto.email }, 'Login failed: User not found');
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -60,6 +78,11 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
+      //Security log: Wrong password
+      this.logger.warn(
+        { userId: user.id, email: user.email },
+        'Login failed: Invalid password',
+      );
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -70,6 +93,8 @@ export class AuthService {
       phone: user.phone,
       username: user.name,
     };
+
+    this.logger.info({ userId: user.id }, 'User logged in successfully');
 
     return {
       access_token: this.jwtService.sign(payload),
