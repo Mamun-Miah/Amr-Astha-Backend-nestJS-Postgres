@@ -8,9 +8,9 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthProvider } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
-import { MailerService } from '@nestjs-modules/mailer'; // New Import
+import { MailerService } from '@nestjs-modules/mailer';
 import * as bcrypt from 'bcryptjs';
-import { randomInt } from 'crypto'; // New Import for secure OTP
+import { randomInt } from 'crypto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
@@ -22,70 +22,13 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private mailService: MailerService, // Inject Mailer
+    private mailService: MailerService,
     @InjectPinoLogger(AuthService.name)
     private readonly logger: PinoLogger,
   ) {}
 
-  /**
-   * PHASE 1: Send OTP to Email
-   */
-  async sendOtp(email: string) {
-    const otp = randomInt(100000, 999999).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60000); // 5 mins expiry
-
-    try {
-      // 1. Store OTP in database
-      await this.prisma.otp.upsert({
-        where: { email },
-        update: { code: otp, expiresAt, createdAt: new Date() },
-        create: { email, code: otp, expiresAt },
-      });
-
-      // 2. Send Email
-      await this.mailService.sendMail({
-        to: email,
-        subject: 'Your Verification Code',
-        html: `<h3>Your OTP is: <b>${otp}</b></h3><p>Valid for 5 minutes.</p>`,
-      });
-
-      this.logger.info({ email }, 'OTP sent successfully');
-      return { message: 'OTP sent to email' };
-    } catch (error: unknown) {
-      this.logger.error({ error, email }, 'Failed to process OTP request');
-      throw new InternalServerErrorException('Error sending verification code');
-    }
-  }
-
-  /**
-   * PHASE 2: Verify OTP
-   */
-  async verifyOtp(email: string, code: string) {
-    const otpRecord = await this.prisma.otp.findUnique({ where: { email } });
-
-    if (
-      !otpRecord ||
-      otpRecord.code !== code ||
-      otpRecord.expiresAt < new Date()
-    ) {
-      this.logger.warn({ email }, 'Invalid or expired OTP attempt');
-      throw new BadRequestException('Invalid or expired code');
-    }
-
-    // Delete OTP after successful use (Single use)
-    await this.prisma.otp.delete({ where: { email } });
-
-    this.logger.info({ email }, 'OTP verified successfully');
-    return { success: true };
-  }
-
-  /**
-   * SIGNUP (Modified to check if email is verified, or you can call verifyOtp separately)
-   */
+  // SIGNUP)
   async signup(dto: RegisterUserDto) {
-    // Logic: In an enterprise app, you'd usually check a 'isVerified' flag in your DB
-    // or ensure they verified the OTP right before this step.
-
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -110,6 +53,55 @@ export class AuthService {
     this.logger.info({ userId: user.id }, 'User registered');
     const { passwordHash: _, ...result } = user;
     return result;
+  }
+
+  /**
+   * Send OTP to Email
+   */
+  async sendOtp(email: string) {
+    const otp = randomInt(100000, 999999).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60000); // 5 mins expiry
+
+    try {
+      //Store OTP in database
+      await this.prisma.otp.upsert({
+        where: { email },
+        update: { code: otp, expiresAt, createdAt: new Date() },
+        create: { email, code: otp, expiresAt },
+      });
+
+      //Send Email
+      await this.mailService.sendMail({
+        to: email,
+        subject: 'Your Verification Code',
+        html: `<h3>Your OTP is: <b>${otp}</b></h3><p>Valid for 5 minutes.</p>`,
+      });
+
+      this.logger.info({ email }, 'OTP sent successfully');
+      return { message: 'OTP sent to email' };
+    } catch (error: unknown) {
+      this.logger.error({ error, email }, 'Failed to process OTP request');
+      throw new InternalServerErrorException('Error sending verification code');
+    }
+  }
+
+  async verifyOtp(email: string, code: string) {
+    const otpRecord = await this.prisma.otp.findUnique({ where: { email } });
+
+    if (
+      !otpRecord ||
+      otpRecord.code !== code ||
+      otpRecord.expiresAt < new Date()
+    ) {
+      this.logger.warn({ email }, 'Invalid or expired OTP attempt');
+      throw new BadRequestException('Invalid or expired code');
+    }
+
+    // Delete OTP after successful use (Single use)
+    await this.prisma.otp.delete({ where: { email } });
+
+    this.logger.info({ email }, 'OTP verified successfully');
+    return { success: true };
   }
 
   async signin(dto: LoginUserDto) {
