@@ -14,7 +14,15 @@ import { LoggerModule } from 'nestjs-pino/LoggerModule';
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-        redact: ['req.headers.authorization', 'req.body.password'],
+        redact: {
+          paths: [
+            'req.headers.authorization',
+            'req.body.password',
+            'res.headers["set-cookie"]',
+          ],
+          remove: true,
+        },
+        autoLogging: true,
         transport:
           process.env.NODE_ENV === 'production'
             ? undefined
