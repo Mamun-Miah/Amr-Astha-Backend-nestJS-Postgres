@@ -7,9 +7,26 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import * as Joi from 'joi';
+import { LoggerModule } from 'nestjs-pino/LoggerModule';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+        redact: ['req.headers.authorization', 'req.body.password'],
+        transport:
+          process.env.NODE_ENV === 'production'
+            ? undefined
+            : {
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  translateTime: 'SYS:standard',
+                },
+              },
+      },
+    }),
     PrismaModule,
     ConfigModule.forRoot({
       isGlobal: true,
