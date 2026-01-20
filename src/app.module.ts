@@ -8,9 +8,16 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import * as Joi from 'joi';
 import { LoggerModule } from 'nestjs-pino/LoggerModule';
-
+import { MailModule } from './mail/mail.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
@@ -46,6 +53,7 @@ import { LoggerModule } from 'nestjs-pino/LoggerModule';
     }),
     AuthModule,
     UserModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

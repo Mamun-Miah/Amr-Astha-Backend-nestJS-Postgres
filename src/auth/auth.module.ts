@@ -6,11 +6,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
-
+import { MailModule } from 'src/mail/mail.module';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-
+    MailModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
