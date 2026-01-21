@@ -26,12 +26,22 @@ export class AuthService {
     @InjectPinoLogger(AuthService.name)
     private readonly logger: PinoLogger,
   ) {}
+  //Find user by email
+  private async findUserByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
+    });
+  }
+  //Find user by uuid
+  private async findUserByUuid(uuid: string) {
+    return this.prisma.user.findUnique({
+      where: { uuid },
+    });
+  }
 
   // SIGNUP)
   async signup(dto: RegisterUserDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const existingUser = await this.findUserByEmail(dto.email);
 
     if (existingUser) {
       this.logger.warn({ email: dto.email }, 'Signup failed: Email exists');
@@ -64,7 +74,7 @@ export class AuthService {
 
     try {
       //find user by uuid
-      const user = await this.prisma.user.findUnique({ where: { uuid } });
+      const user = await this.findUserByUuid(uuid);
       if (!user) {
         this.logger.warn({ uuid }, 'OTP request failed: User not found');
         throw new BadRequestException('User not found');
@@ -109,7 +119,7 @@ export class AuthService {
 
   async verifyOtp(uuid: string, code: string) {
     //find user by uuid
-    const user = await this.prisma.user.findUnique({ where: { uuid } });
+    const user = await this.findUserByUuid(uuid);
     if (!user) {
       this.logger.warn({ uuid }, 'OTP verification failed: User not found');
       throw new BadRequestException('User not found');
@@ -141,13 +151,12 @@ export class AuthService {
     await this.prisma.otp.delete({ where: { email } });
 
     this.logger.info({ email }, 'OTP verified successfully');
+
     return { success: true, message: 'Email verified successfully' };
   }
   // SIGNIN
   async signin(dto: LoginUserDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const user = await this.findUserByEmail(dto.email);
 
     if (!user || !user.passwordHash) {
       // Security log: User not found
