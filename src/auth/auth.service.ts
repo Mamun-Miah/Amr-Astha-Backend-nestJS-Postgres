@@ -143,8 +143,22 @@ export class AuthService {
     this.logger.info({ email }, 'OTP verified successfully');
     return { success: true, message: 'Email verified successfully' };
   }
-
+  // SIGNIN
   async signin(dto: LoginUserDto) {
+    //check if user email is verified
+    // const checkEmailverified = await this.prisma.user.findUniqueOrThrow({
+    //   where: { email: dto.email },
+    //   select: { isEmailVerified: true },
+    // });
+
+    // if (!checkEmailverified.isEmailVerified) {
+    //   this.logger.warn(
+    //     { email: dto.email },
+    //     'Login failed: Email not verified',
+    //   );
+    //   throw new UnauthorizedException('Email not verified');
+    // }
+
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -170,17 +184,18 @@ export class AuthService {
     }
 
     const payload = {
-      sub: user.id,
       email: user.email,
       uuid: user.uuid,
       phone: user.phone,
       username: user.name,
+      isEmailVerified: user.isEmailVerified,
     };
 
     this.logger.info({ userId: user.id }, 'User logged in successfully');
 
     return {
       access_token: this.jwtService.sign(payload),
+      success: true,
       user: {
         id: user.id,
         uuid: user.uuid,
