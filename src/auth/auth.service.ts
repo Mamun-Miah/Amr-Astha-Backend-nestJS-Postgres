@@ -96,7 +96,10 @@ export class AuthService {
       this.logger.warn({ email }, 'Invalid or expired OTP attempt');
       throw new BadRequestException('Invalid or expired code');
     }
-
+    await this.prisma.user.update({
+      where: { email },
+      data: { isEmailVerified: true },
+    });
     // Delete OTP after successful use (Single use)
     await this.prisma.otp.delete({ where: { email } });
 
