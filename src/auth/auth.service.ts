@@ -58,11 +58,19 @@ export class AuthService {
   /**
    * Send OTP to Email
    */
-  async sendOtp(email: string) {
+  async sendOtp(uuid: string) {
     const otp = randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 5 * 60000); // 5 mins expiry
 
     try {
+      //find user by uuid
+      const user = await this.prisma.user.findUnique({ where: { uuid } });
+      if (!user) {
+        this.logger.warn({ uuid }, 'OTP request failed: User not found');
+        throw new BadRequestException('User not found');
+      }
+      const email = user.email;
+
       //Store OTP in database
       await this.prisma.otp.upsert({
         where: { email },
@@ -78,14 +86,25 @@ export class AuthService {
       });
 
       this.logger.info({ email }, 'OTP sent successfully');
-      return { message: 'OTP sent to email' };
+      return {
+        success: true,
+        message: 'OTP sent to email',
+      };
     } catch (error: unknown) {
-      this.logger.error({ error, email }, 'Failed to process OTP request');
+      this.logger.error({ error, uuid }, 'Failed to process OTP request');
       throw new InternalServerErrorException('Error sending verification code');
     }
   }
 
-  async verifyOtp(email: string, code: string) {
+  async verifyOtp(uuid: string, code: string) {
+    //find user by uuid
+    const user = await this.prisma.user.findUnique({ where: { uuid } });
+    if (!user) {
+      this.logger.warn({ uuid }, 'OTP verification failed: User not found');
+      throw new BadRequestException('User not found');
+    }
+    //find otp record
+    const email = user.email;
     const otpRecord = await this.prisma.otp.findUnique({ where: { email } });
 
     if (
@@ -104,7 +123,7 @@ export class AuthService {
     await this.prisma.otp.delete({ where: { email } });
 
     this.logger.info({ email }, 'OTP verified successfully');
-    return { success: true };
+    return { success: true, message: 'Email verified successfully' };
   }
 
   async signin(dto: LoginUserDto) {

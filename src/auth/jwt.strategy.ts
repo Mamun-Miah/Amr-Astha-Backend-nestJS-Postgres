@@ -45,7 +45,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     //disable users cannot login
     if (!user || !user.isActive) {
-      this.logger.warn('User not found or inactive');
+      this.logger.warn({ uuid: payload.uuid }, 'User not found or inactive');
       throw new UnauthorizedException('User account is invalid or disabled');
     }
     return user;

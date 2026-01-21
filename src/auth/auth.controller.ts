@@ -19,7 +19,7 @@ export class AuthController {
     return this.authService.signin(dto);
   }
   @UseGuards(ThrottlerGuard)
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Throttle({ default: { limit: 100, ttl: 60000 } })
   @Post('request-otp')
   async requestOtp(@Body() dto: RequestOtpDto) {
     return this.authService.sendOtp(dto.email);
