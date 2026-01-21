@@ -52,6 +52,7 @@ jobs:
             cd /var/www/Amr-Astha-Backend-nestJS-Postgres
             git pull origin main
             npm ci
+            npm i pino-pretty
             npx prisma generate
             npm run build
             pm2 restart amrastha-backend
