@@ -54,4 +54,4 @@ jobs:
             npm ci --only=production
             npx prisma generate
             npm run build
-            pm2 restart all
+            pm2 restart amrastha-backend
