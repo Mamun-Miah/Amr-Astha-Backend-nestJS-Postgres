@@ -51,7 +51,7 @@ jobs:
           script: |
             cd /var/www/Amr-Astha-Backend-nestJS-Postgres
             git pull origin main
-            npm ci --only=production
+            npm ci
             npx prisma generate
             npm run build
             pm2 restart amrastha-backend
