@@ -69,6 +69,17 @@ export class AuthService {
         this.logger.warn({ uuid }, 'OTP request failed: User not found');
         throw new BadRequestException('User not found');
       }
+      //if user verified, no need to send OTP
+      if (user.isEmailVerified) {
+        this.logger.info(
+          { uuid },
+          'OTP request ignored: Email already verified',
+        );
+        return {
+          success: true,
+          message: 'Email is already verified',
+        };
+      }
       const email = user.email;
 
       //Store OTP in database
@@ -82,7 +93,7 @@ export class AuthService {
       await this.mailService.sendMail({
         to: email,
         subject: 'Your Verification Code',
-        html: `<h3>Your OTP is: <b>${otp}</b></h3><p>Valid for 5 minutes.</p>`,
+        html: `<h3>Your OTP is: <b>${otp}</b></h3><p>Valid for 5 minutes.</p><br><p>From Amrastha Team</p>`,
       });
 
       this.logger.info({ email }, 'OTP sent successfully');
@@ -102,6 +113,13 @@ export class AuthService {
     if (!user) {
       this.logger.warn({ uuid }, 'OTP verification failed: User not found');
       throw new BadRequestException('User not found');
+    }
+    if (user.isEmailVerified) {
+      this.logger.info({ uuid }, 'OTP request ignored: Email already verified');
+      return {
+        success: true,
+        message: 'Email is already verified',
+      };
     }
     //find otp record
     const email = user.email;
@@ -169,6 +187,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        isEmailVerified: user.isEmailVerified,
       },
     };
   }

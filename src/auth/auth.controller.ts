@@ -22,10 +22,10 @@ export class AuthController {
   @Throttle({ default: { limit: 100, ttl: 60000 } })
   @Post('request-otp')
   async requestOtp(@Body() dto: RequestOtpDto) {
-    return this.authService.sendOtp(dto.email);
+    return this.authService.sendOtp(dto.uuid);
   }
   @Post('verify-otp')
   async verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.authService.verifyOtp(dto.email, dto.code);
+    return this.authService.verifyOtp(dto.uuid, dto.code);
   }
 }
