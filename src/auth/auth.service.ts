@@ -145,20 +145,6 @@ export class AuthService {
   }
   // SIGNIN
   async signin(dto: LoginUserDto) {
-    //check if user email is verified
-    // const checkEmailverified = await this.prisma.user.findUniqueOrThrow({
-    //   where: { email: dto.email },
-    //   select: { isEmailVerified: true },
-    // });
-
-    // if (!checkEmailverified.isEmailVerified) {
-    //   this.logger.warn(
-    //     { email: dto.email },
-    //     'Login failed: Email not verified',
-    //   );
-    //   throw new UnauthorizedException('Email not verified');
-    // }
-
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
