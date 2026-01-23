@@ -12,11 +12,13 @@ import {
   UseGuards,
   ForbiddenException,
   Req,
+  Res,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
-import { join, normalize } from 'path';
+import { extname, join, normalize } from 'path';
+import type { Response } from 'express';
 import { createReadStream, existsSync } from 'fs'; // Required for the 'view' route
 interface RequestWithUser extends Request {
   user: {
@@ -67,23 +69,38 @@ export class FilesController {
   async getPrivateFile(
     @Query('path') dbPath: string,
     @Req() req: RequestWithUser,
-  ): Promise<StreamableFile> {
-    if (!dbPath) {
-      throw new NotFoundException('No file path provided');
-    }
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const isOwner = await this.filesService.validateFileAccess(
       req.user.uuid,
       dbPath,
     );
+    if (!isOwner) throw new ForbiddenException('Not authorized');
 
-    if (!isOwner) {
-      throw new ForbiddenException('You are not authorized to view this file');
-    }
     const absolutePath = join(process.cwd(), normalize(dbPath));
+    if (!existsSync(absolutePath))
+      throw new NotFoundException('File not found');
 
-    if (!existsSync(absolutePath)) {
-      throw new NotFoundException('File does not exist on the server');
-    }
+    // 1. Detect extension (e.g., .png, .jpg, .pdf)
+    const extension = extname(absolutePath).toLowerCase();
+
+    // 2. Set the correct Content-Type
+    const mimeTypes: Record<string, string> = {
+      '.pdf': 'application/pdf',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+    };
+    const contentType = mimeTypes[extension] || 'application/octet-stream';
+
+    // 3. Set headers for download
+    // Filename will be: 7ba2013c-3f31-4767-9af9-5c8675cac1f9.png
+    const downloadName = `${req.user.uuid}${extension}`;
+
+    res.set({
+      'Content-Type': contentType,
+      'Content-Disposition': `attachment; filename="${downloadName}"`,
+    });
 
     const file = createReadStream(absolutePath);
     return new StreamableFile(file);
