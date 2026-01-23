@@ -93,8 +93,6 @@ export class FilesController {
     };
     const contentType = mimeTypes[extension] || 'application/octet-stream';
 
-    // 3. Set headers for download
-    // Filename will be: 7ba2013c-3f31-4767-9af9-5c8675cac1f9.png
     const downloadName = `${req.user.uuid}${extension}`;
 
     res.set({
