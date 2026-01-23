@@ -10,13 +10,20 @@ import {
   NotFoundException,
   Query,
   UseGuards,
+  ForbiddenException,
+  Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { join, normalize } from 'path';
 import { createReadStream, existsSync } from 'fs'; // Required for the 'view' route
-
+interface RequestWithUser extends Request {
+  user: {
+    uuid: string;
+    email: string;
+  };
+}
 @Controller('seller')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
@@ -57,11 +64,21 @@ export class FilesController {
 
   @Get('view-file')
   @UseGuards(JwtAuthGuard)
-  getPrivateFile(@Query('path') dbPath: string): StreamableFile {
+  async getPrivateFile(
+    @Query('path') dbPath: string,
+    @Req() req: RequestWithUser,
+  ): Promise<StreamableFile> {
     if (!dbPath) {
       throw new NotFoundException('No file path provided');
     }
+    const isOwner = await this.filesService.validateFileAccess(
+      req.user.uuid,
+      dbPath,
+    );
 
+    if (!isOwner) {
+      throw new ForbiddenException('You are not authorized to view this file');
+    }
     const absolutePath = join(process.cwd(), normalize(dbPath));
 
     if (!existsSync(absolutePath)) {

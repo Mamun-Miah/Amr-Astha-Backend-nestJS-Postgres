@@ -20,4 +20,23 @@ export class FilesService {
       },
     });
   }
+
+  async validateFileAccess(
+    userUuid: string,
+    requestedPath: string,
+  ): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: { uuid: userUuid },
+      select: { profileImageUrl: true, nidImageUrl: true },
+    });
+
+    if (!user) return false;
+
+    // Normalizing paths to ensure the comparison works (replaces \ with /)
+    const normRequested = requestedPath.replace(/\\/g, '/');
+    const normProfile = user.profileImageUrl?.replace(/\\/g, '/');
+    const normNid = user.nidImageUrl?.replace(/\\/g, '/');
+
+    return normRequested === normProfile || normRequested === normNid;
+  }
 }
