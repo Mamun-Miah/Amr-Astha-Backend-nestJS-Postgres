@@ -10,6 +10,7 @@ import * as Joi from 'joi';
 import { LoggerModule } from 'nestjs-pino/LoggerModule';
 import { MailModule } from './mail/mail.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { FilesModule } from './files/files.module';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -54,6 +55,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     AuthModule,
     UserModule,
     MailModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
