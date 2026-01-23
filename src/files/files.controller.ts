@@ -6,21 +6,23 @@ import {
   Body,
   Get,
   StreamableFile,
-  Param,
-  ParseFilePipe, // Added for validation [cite: 48]
-  //MaxFileSizeValidator,
-  // FileTypeValidator, // Added for security [cite: 88]
+  ParseFilePipe,
+  NotFoundException,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
-import { join } from 'path';
-import { createReadStream } from 'fs'; // Required for the 'view' route
+import { join, normalize } from 'path';
+import { createReadStream, existsSync } from 'fs'; // Required for the 'view' route
 
 @Controller('seller')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Post('upload-assets')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'profileImage', maxCount: 1 },
@@ -31,8 +33,7 @@ export class FilesController {
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
-          //new MaxFileSizeValidator({ maxSize: 10485760 }), // 5MB limit [cite: 94]
-          // You can add FileTypeValidator here as well [cite: 95]
+          // new MaxFileSizeValidator({ maxSize: 10485760 }),
           // new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
         ],
       }),
@@ -54,18 +55,20 @@ export class FilesController {
     );
   }
 
-  @Get('view/:type/:filename')
-  getPrivateFile(
-    @Param('type') type: string,
-    @Param('filename') filename: string,
-  ) {
-    // Determine the correct subfolder based on the file type
-    const subFolder = type === 'nid' ? 'documents' : 'profiles';
+  @Get('view-file')
+  @UseGuards(JwtAuthGuard)
+  getPrivateFile(@Query('path') dbPath: string): StreamableFile {
+    if (!dbPath) {
+      throw new NotFoundException('No file path provided');
+    }
 
-    // Construct the full path to the private directory
-    const filePath = join(process.cwd(), 'uploads/seller', subFolder, filename);
-    console.log('Looking for file at:', filePath);
-    const file = createReadStream(filePath);
+    const absolutePath = join(process.cwd(), normalize(dbPath));
+
+    if (!existsSync(absolutePath)) {
+      throw new NotFoundException('File does not exist on the server');
+    }
+
+    const file = createReadStream(absolutePath);
     return new StreamableFile(file);
   }
 }
