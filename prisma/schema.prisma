@@ -65,7 +65,7 @@ model BusinessInfo {
   businessLogoUrl        String?
   businessType           BusinessTypeEnum
   businessAddress        String
-  businessPhone          String           @unique
+  businessPhone          String?           @unique
   businessEmail          String           @unique
   businessWebsite        String?
   businessTradeLicense   String?

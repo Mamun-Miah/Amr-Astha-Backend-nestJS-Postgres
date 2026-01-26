@@ -1,21 +1,25 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateSellerProfileDto } from './dto/update-seller-profile.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import type { JwtUser } from 'src/auth/types/jwt-user.type';
 @Controller('seller/my-profile')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-  @Patch(':id')
+
+  @Patch()
   @UseGuards(JwtAuthGuard)
   updateSellerProfile(
-    @Param('id') id: string,
+    @GetUser() user: JwtUser,
     @Body() dto: UpdateSellerProfileDto,
   ) {
-    return this.userService.updateSellerProfile(id, dto);
+    return this.userService.updateSellerProfile(user.uuid, dto);
   }
-  @Get(':id')
+
+  @Get()
   @UseGuards(JwtAuthGuard)
-  getSellerProfile(@Param('id') id: string) {
-    return this.userService.getSellerProfile(id);
+  getSellerProfile(@GetUser() user: JwtUser) {
+    return this.userService.getSellerProfile(user.uuid);
   }
 }
