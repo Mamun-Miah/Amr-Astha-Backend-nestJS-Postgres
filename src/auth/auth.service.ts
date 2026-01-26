@@ -59,17 +59,9 @@ export class AuthService {
         passwordHash,
       },
     });
-    const payload = {
-      email: user.email,
-      uuid: user.uuid,
-      phone: user.phone,
-      username: user.name,
-      isEmailVerified: user.isEmailVerified,
-    };
     this.logger.info({ userId: user.id }, 'User registered');
     const { passwordHash: _, ...result } = user;
     return {
-      access_token: this.jwtService.sign(payload),
       success: true,
       data: result,
     };
@@ -161,8 +153,19 @@ export class AuthService {
     await this.prisma.otp.delete({ where: { email } });
 
     this.logger.info({ email }, 'OTP verified successfully');
-
-    return { success: true, message: 'Email verified successfully' };
+    const payload = {
+      email: user.email,
+      uuid: user.uuid,
+      phone: user.phone,
+      username: user.name,
+      isEmailVerified: user.isEmailVerified,
+    };
+    const accessToken = this.jwtService.sign(payload);
+    return {
+      accessToken,
+      success: true,
+      message: 'Email verified successfully',
+    };
   }
   // SIGNIN
   async signin(dto: LoginUserDto) {
@@ -195,11 +198,11 @@ export class AuthService {
       username: user.name,
       isEmailVerified: user.isEmailVerified,
     };
-
+    const accessToken = this.jwtService.sign(payload);
     this.logger.info({ userId: user.id }, 'User logged in successfully');
 
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken,
       success: true,
       user: {
         id: user.id,

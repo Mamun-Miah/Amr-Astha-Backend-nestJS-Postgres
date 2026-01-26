@@ -4,6 +4,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PinoLogger, InjectPinoLogger } from 'nestjs-pino';
+import type { Request } from 'express';
+
 interface JwtPayload {
   uuid: string;
   username: string;
@@ -11,6 +13,11 @@ interface JwtPayload {
   role?: string;
   iat?: number;
   exp?: number;
+}
+interface RequestWithCookies extends Request {
+  cookies: {
+    Authentication?: unknown;
+  };
 }
 
 @Injectable()
@@ -22,7 +29,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly logger: PinoLogger,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request): string | null => {
+          const request = req as RequestWithCookies;
+          const token = request.cookies?.Authentication;
+
+          if (typeof token !== 'string') {
+            return null;
+          }
+
+          return token;
+        },
+      ]),
       ignoreExpiration: false,
 
       secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
