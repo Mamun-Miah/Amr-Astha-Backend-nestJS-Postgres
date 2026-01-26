@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
@@ -87,11 +89,11 @@ export class UserService {
         },
       });
       if (!user) {
-        throw new BadRequestException('User not found');
+        throw new NotFoundException(`Seller with UUID ${sellerUUID} not found`);
       }
       return { success: true, data: user };
     } catch (error: unknown) {
-      if (error instanceof BadRequestException) {
+      if (error instanceof HttpException) {
         throw error;
       }
       this.logger.error(
