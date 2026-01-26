@@ -25,11 +25,11 @@ export class UserService {
     sellerProfileData: SellerProfileData,
   ) {
     //find user by uuid
-    const user = await this.prisma.user.findUnique({
+    const findUniqueUser = await this.prisma.user.findUnique({
       where: { uuid: sellerUUID },
     });
 
-    if (!user) {
+    if (!findUniqueUser) {
       throw new BadRequestException('User not found');
     }
 
@@ -37,7 +37,13 @@ export class UserService {
     try {
       const user = await this.prisma.user.update({
         where: { uuid: sellerUUID },
-        data: sellerProfileData,
+        data: {
+          name: sellerProfileData.name,
+          phone: sellerProfileData.phone,
+          address: sellerProfileData.address,
+          profileImageUrl: sellerProfileData.profileImageUrl,
+          nidImageUrl: sellerProfileData.nidImageUrl,
+        },
         select: {
           uuid: true,
           name: true,
@@ -85,13 +91,16 @@ export class UserService {
       }
       return { success: true, data: user };
     } catch (error: unknown) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       this.logger.error(
         {
           error: error,
         },
         'Failed to get seller profile',
       );
-      throw new InternalServerErrorException('Failes to get seller profile');
+      throw new InternalServerErrorException('Failed to get seller profile');
     }
   }
 }
