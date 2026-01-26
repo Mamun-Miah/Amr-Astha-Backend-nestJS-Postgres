@@ -59,10 +59,20 @@ export class AuthService {
         passwordHash,
       },
     });
-
+    const payload = {
+      email: user.email,
+      uuid: user.uuid,
+      phone: user.phone,
+      username: user.name,
+      isEmailVerified: user.isEmailVerified,
+    };
     this.logger.info({ userId: user.id }, 'User registered');
     const { passwordHash: _, ...result } = user;
-    return result;
+    return {
+      access_token: this.jwtService.sign(payload),
+      success: true,
+      data: result,
+    };
   }
 
   /**
