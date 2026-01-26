@@ -43,17 +43,12 @@ export class UserService {
           name: sellerProfileData.name,
           phone: sellerProfileData.phone,
           address: sellerProfileData.address,
-          profileImageUrl: sellerProfileData.profileImageUrl,
-          nidImageUrl: sellerProfileData.nidImageUrl,
         },
         select: {
-          uuid: true,
           name: true,
           phone: true,
           email: true,
           address: true,
-          nidImageUrl: true,
-          profileImageUrl: true,
         },
       });
       this.logger.info({ sellerUUID }, 'Seller profile updated successfully');

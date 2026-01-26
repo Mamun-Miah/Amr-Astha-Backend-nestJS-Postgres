@@ -28,12 +28,4 @@ export class UpdateSellerProfileDto {
   @IsString()
   @IsOptional()
   address?: string;
-
-  @IsString()
-  @IsOptional()
-  profileImageUrl?: string;
-
-  @IsString()
-  @IsOptional()
-  nidImageUrl?: string;
 }
