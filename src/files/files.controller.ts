@@ -81,10 +81,10 @@ export class FilesController {
     if (!existsSync(absolutePath))
       throw new NotFoundException('File not found');
 
-    // 1. Detect extension (e.g., .png, .jpg, .pdf)
+    // Detect extension (e.g., .png, .jpg, .pdf)
     const extension = extname(absolutePath).toLowerCase();
 
-    // 2. Set the correct Content-Type
+    // Set the correct Content-Type
     const mimeTypes: Record<string, string> = {
       '.pdf': 'application/pdf',
       '.png': 'image/png',
