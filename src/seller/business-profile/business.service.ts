@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   InternalServerErrorException,
+  HttpException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -41,6 +42,14 @@ export class BusinessService {
 
       if (!user) {
         throw new NotFoundException('User not found');
+      }
+      //find Unique user by email
+      const findUserbyEmail = await this.prisma.user.findUnique({
+        where: { email: bussinessProfileData.businessEmail },
+      });
+
+      if (findUserbyEmail) {
+        throw new NotFoundException('Email already exists');
       }
 
       // Create business profile
@@ -101,10 +110,10 @@ export class BusinessService {
         data: getBusinessProfileData,
       };
     } catch (error) {
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
-      throw new InternalServerErrorException('Failed to get business profile');
+      throw new InternalServerErrorException();
     }
   }
 }
