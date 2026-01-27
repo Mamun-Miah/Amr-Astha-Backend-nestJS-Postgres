@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { BusinessService } from './business.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateBusinessProfileDto } from './dto/create-business-profile.dto';
@@ -10,7 +10,7 @@ import type { JwtUser } from 'src/auth/types/jwt-user.type';
 export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}
 
-  @Patch('create')
+  @Post('create')
   async createBusinessProfile(
     @GetUser() user: JwtUser,
     @Body() dto: CreateBusinessProfileDto,
