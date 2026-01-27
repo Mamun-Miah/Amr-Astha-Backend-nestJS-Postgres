@@ -66,7 +66,7 @@ export class BusinessService {
         data: business,
       };
     } catch (error) {
-      // console.error(error);
+      console.error(error);
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -90,21 +90,6 @@ export class BusinessService {
       // Find business
       const getBusinessProfileData = await this.prisma.businessInfo.findFirst({
         where: { userId: findUserbyUuid.id },
-        select: {
-          businessName: true,
-          businessLogoUrl: true,
-          businessType: true,
-          businessAddress: true,
-          businessPhone: true,
-          businessEmail: true,
-          businessWebsite: true,
-          businessTradeLicense: true,
-          businessWareHouse: true,
-          businessStoreFrontLink: true,
-          businessCategoryId: true,
-          createdAt: true,
-          updatedAt: true,
-        },
       });
 
       if (!getBusinessProfileData) {
