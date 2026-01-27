@@ -27,6 +27,7 @@ export class AuthController {
       secure: true,
       // sameSite: 'lax',
       sameSite: 'none',
+      partitioned: true,
       maxAge: 3600000, // 1 hour
       path: '/',
     });
@@ -52,6 +53,7 @@ export class AuthController {
         // secure: process.env.NODE_ENV === 'production',
         secure: true,
         // sameSite: 'lax',
+        partitioned: true,
         sameSite: 'none',
         maxAge: 3600000,
         path: '/',
