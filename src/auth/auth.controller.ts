@@ -28,6 +28,7 @@ export class AuthController {
       // sameSite: 'lax',
       sameSite: 'none',
       maxAge: 3600000, // 1 hour
+      path: '/',
     });
 
     return { success: true, user };
@@ -53,6 +54,7 @@ export class AuthController {
         // sameSite: 'lax',
         sameSite: 'none',
         maxAge: 3600000,
+        path: '/',
       });
     }
 
