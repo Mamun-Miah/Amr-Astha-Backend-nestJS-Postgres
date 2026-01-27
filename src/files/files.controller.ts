@@ -3,7 +3,6 @@ import {
   Post,
   UseInterceptors,
   UploadedFiles,
-  Body,
   Get,
   StreamableFile,
   ParseFilePipe,
@@ -20,22 +19,24 @@ import { FilesService } from './files.service';
 import { extname, join, normalize } from 'path';
 import type { Response } from 'express';
 import { createReadStream, existsSync } from 'fs'; // Required for the 'view' route
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
 interface RequestWithUser extends Request {
   user: {
     uuid: string;
     email: string;
   };
 }
+@UseGuards(JwtAuthGuard)
 @Controller('seller')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Post('upload-assets')
-  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'profileImage', maxCount: 1 },
       { name: 'nidImage', maxCount: 1 },
+      { name: 'businessLogo', maxCount: 1 },
     ]),
   )
   async uploadSellerFiles(
@@ -50,22 +51,24 @@ export class FilesController {
     files: {
       profileImage?: Express.Multer.File[];
       nidImage?: Express.Multer.File[];
+      businessLogo?: Express.Multer.File[];
     },
-    @Body('userId') userId: string,
+    @GetUser('uuid') uuid: string,
   ) {
     const profileFile = files.profileImage?.[0];
     const nidFile = files.nidImage?.[0];
+    const businessLogoFile = files.businessLogo?.[0];
 
     // Using await ensures the async Prisma operation completes [cite: 171]
     return await this.filesService.updateUserPaths(
-      userId,
+      uuid,
       profileFile?.path,
       nidFile?.path,
+      businessLogoFile?.path,
     );
   }
 
   @Get('view-file')
-  @UseGuards(JwtAuthGuard)
   async getPrivateFile(
     @Query('path') dbPath: string,
     @Req() req: RequestWithUser,

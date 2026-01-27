@@ -4,14 +4,30 @@ import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class FilesService {
   constructor(private prisma: PrismaService) {}
-
+  //update files upload path
   async updateUserPaths(
-    userId: string,
+    uuid: string,
     profilePath?: string,
     nidPath?: string,
+    businessLogoPath?: string,
   ) {
+    if (businessLogoPath) {
+      //find user id by uuid
+
+      const findUserId = await this.prisma.user.findUnique({
+        where: { uuid: uuid },
+        select: { id: true },
+      });
+      if (!findUserId) return;
+      return await this.prisma.businessInfo.update({
+        where: { id: findUserId.id },
+        data: {
+          businessLogoUrl: businessLogoPath?.replace(/\\/g, '/'),
+        },
+      });
+    }
     return await this.prisma.user.update({
-      where: { uuid: userId },
+      where: { uuid: uuid },
       data: {
         ...(profilePath && {
           profileImageUrl: profilePath?.replace(/\\/g, '/'),
