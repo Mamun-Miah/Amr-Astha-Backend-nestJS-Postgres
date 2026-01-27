@@ -4,6 +4,7 @@ import {
   BadRequestException,
   UnauthorizedException,
   InternalServerErrorException,
+  HttpException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthProvider } from '@prisma/client';
@@ -41,31 +42,42 @@ export class AuthService {
 
   // SIGNUP)
   async signup(dto: RegisterUserDto) {
-    const existingUser = await this.findUserByEmail(dto.email);
+    try {
+      const existingUser = await this.findUserByEmail(dto.email);
 
-    if (existingUser) {
-      this.logger.warn({ email: dto.email }, 'Signup failed: Email exists');
-      throw new BadRequestException('Email already exists');
+      if (existingUser) {
+        this.logger.warn({ email: dto.email }, 'Signup failed: Email exists');
+        throw new BadRequestException('Email already exists');
+      }
+
+      const passwordHash = await bcrypt.hash(dto.password, roundsOfHashing);
+
+      const user = await this.prisma.user.create({
+        data: {
+          name: dto.name,
+          email: dto.email,
+          phone: dto.phone,
+          provider: AuthProvider.EMAIL,
+          passwordHash,
+        },
+      });
+      this.logger.info({ userId: user.id }, 'User registered');
+      const { passwordHash: _, ...result } = user;
+      return {
+        success: true,
+        message: 'User registered successfully',
+        data: result,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      this.logger.error(
+        { error: error instanceof Error ? error : new Error(String(error)) },
+        'Failed to register user',
+      );
+      throw new InternalServerErrorException('Failed to register user');
     }
-
-    const passwordHash = await bcrypt.hash(dto.password, roundsOfHashing);
-
-    const user = await this.prisma.user.create({
-      data: {
-        name: dto.name,
-        email: dto.email,
-        phone: dto.phone,
-        provider: AuthProvider.EMAIL,
-        passwordHash,
-      },
-    });
-    this.logger.info({ userId: user.id }, 'User registered');
-    const { passwordHash: _, ...result } = user;
-    return {
-      success: true,
-      message: 'User registered successfully',
-      data: result,
-    };
   }
 
   /**
@@ -121,99 +133,118 @@ export class AuthService {
   }
 
   async verifyOtp(uuid: string, code: string) {
-    //find user by uuid
-    const user = await this.findUserByUuid(uuid);
-    if (!user) {
-      this.logger.warn({ uuid }, 'OTP verification failed: User not found');
-      throw new BadRequestException('User not found');
-    }
-    if (user.isEmailVerified) {
-      this.logger.info({ uuid }, 'OTP request ignored: Email already verified');
-      return {
-        success: true,
-        message: 'Email is already verified',
+    try {
+      //find user by uuid
+      const user = await this.findUserByUuid(uuid);
+      if (!user) {
+        this.logger.warn({ uuid }, 'OTP verification failed: User not found');
+        throw new BadRequestException('User not found');
+      }
+      if (user.isEmailVerified) {
+        this.logger.info(
+          { uuid },
+          'OTP request ignored: Email already verified',
+        );
+        return {
+          success: true,
+          message: 'Email is already verified',
+        };
+      }
+      //find otp record
+      const email = user.email;
+      const otpRecord = await this.prisma.otp.findUnique({ where: { email } });
+
+      if (
+        !otpRecord ||
+        otpRecord.code !== code ||
+        otpRecord.expiresAt < new Date()
+      ) {
+        this.logger.warn({ email }, 'Invalid or expired OTP attempt');
+        throw new BadRequestException('Invalid or expired code');
+      }
+      await this.prisma.user.update({
+        where: { email },
+        data: { isEmailVerified: true },
+      });
+      // Delete OTP after successful use (Single use)
+      await this.prisma.otp.delete({ where: { email } });
+
+      this.logger.info({ email }, 'OTP verified successfully');
+      const payload = {
+        email: user.email,
+        uuid: user.uuid,
+        phone: user.phone,
+        username: user.name,
+        isEmailVerified: user.isEmailVerified,
       };
+      const accessToken = this.jwtService.sign(payload);
+      return {
+        accessToken,
+        success: true,
+        message: 'Email verified successfully',
+      };
+    } catch (error: unknown) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      this.logger.error({ error, uuid }, 'Failed to verify OTP');
+      throw new InternalServerErrorException('Error verifying OTP');
     }
-    //find otp record
-    const email = user.email;
-    const otpRecord = await this.prisma.otp.findUnique({ where: { email } });
-
-    if (
-      !otpRecord ||
-      otpRecord.code !== code ||
-      otpRecord.expiresAt < new Date()
-    ) {
-      this.logger.warn({ email }, 'Invalid or expired OTP attempt');
-      throw new BadRequestException('Invalid or expired code');
-    }
-    await this.prisma.user.update({
-      where: { email },
-      data: { isEmailVerified: true },
-    });
-    // Delete OTP after successful use (Single use)
-    await this.prisma.otp.delete({ where: { email } });
-
-    this.logger.info({ email }, 'OTP verified successfully');
-    const payload = {
-      email: user.email,
-      uuid: user.uuid,
-      phone: user.phone,
-      username: user.name,
-      isEmailVerified: user.isEmailVerified,
-    };
-    const accessToken = this.jwtService.sign(payload);
-    return {
-      accessToken,
-      success: true,
-      message: 'Email verified successfully',
-    };
   }
   // SIGNIN
   async signin(dto: LoginUserDto) {
-    const user = await this.findUserByEmail(dto.email);
+    try {
+      const user = await this.findUserByEmail(dto.email);
 
-    if (!user || !user.passwordHash) {
-      // Security log: User not found
-      this.logger.warn({ email: dto.email }, 'Login failed: User not found');
-      throw new UnauthorizedException('Invalid credentials');
-    }
+      if (!user || !user.passwordHash) {
+        // Security log: User not found
+        this.logger.warn({ email: dto.email }, 'Login failed: User not found');
+        throw new UnauthorizedException('Invalid credentials');
+      }
 
-    const isPasswordValid = await bcrypt.compare(
-      dto.password,
-      user.passwordHash,
-    );
-
-    if (!isPasswordValid) {
-      //Security log: Wrong password
-      this.logger.warn(
-        { userId: user.id, email: user.email },
-        'Login failed: Invalid password',
+      const isPasswordValid = await bcrypt.compare(
+        dto.password,
+        user.passwordHash,
       );
-      throw new UnauthorizedException('Invalid credentials');
-    }
 
-    const payload = {
-      email: user.email,
-      uuid: user.uuid,
-      phone: user.phone,
-      username: user.name,
-      isEmailVerified: user.isEmailVerified,
-    };
-    const accessToken = this.jwtService.sign(payload);
-    this.logger.info({ userId: user.id }, 'User logged in successfully');
+      if (!isPasswordValid) {
+        //Security log: Wrong password
+        this.logger.warn(
+          { userId: user.id, email: user.email },
+          'Login failed: Invalid password',
+        );
+        throw new UnauthorizedException('Invalid credentials');
+      }
 
-    return {
-      accessToken,
-      success: true,
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        uuid: user.uuid,
-        name: user.name,
+      const payload = {
         email: user.email,
+        uuid: user.uuid,
         phone: user.phone,
+        username: user.name,
         isEmailVerified: user.isEmailVerified,
-      },
-    };
+      };
+      const accessToken = this.jwtService.sign(payload);
+      this.logger.info({ userId: user.id }, 'User logged in successfully');
+
+      return {
+        accessToken,
+        success: true,
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          uuid: user.uuid,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          isEmailVerified: user.isEmailVerified,
+        },
+      };
+    } catch (error: unknown) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      this.logger.error(error, 'Failed to login user');
+      throw new InternalServerErrorException('Failed to login user');
+    }
   }
 }
