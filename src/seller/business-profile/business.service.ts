@@ -100,9 +100,11 @@ export class BusinessService {
       }
 
       // Find business
-      const getBusinessProfileData = await this.prisma.businessInfo.findFirst({
+      const getBusinessProfileData = await this.prisma.businessInfo.findMany({
         where: { userId: findUserbyUuid.id },
         select: {
+          id: true,
+          userId: true,
           businessName: true,
           businessLogoUrl: true,
           businessType: true,

@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  // ForbiddenException,
+  Injectable,
+  // NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -10,21 +14,12 @@ export class FilesService {
     profilePath?: string,
     nidPath?: string,
     businessLogoPath?: string,
+    businessId?: number,
   ) {
     try {
-      if (businessLogoPath) {
-        const findUserId = await this.prisma.user.findUnique({
-          where: { uuid: uuid },
-          select: { id: true },
-        });
-
-        if (!findUserId) {
-          console.error('User not found');
-          return null;
-        }
-
+      if (businessLogoPath && businessId) {
         return await this.prisma.businessInfo.update({
-          where: { id: findUserId.id },
+          where: { id: businessId },
           data: {
             businessLogoUrl: businessLogoPath.replace(/\\/g, '/'),
           },

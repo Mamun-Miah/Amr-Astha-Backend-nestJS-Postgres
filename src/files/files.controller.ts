@@ -20,6 +20,7 @@ import { extname, join, normalize } from 'path';
 import type { Response } from 'express';
 import { createReadStream, existsSync } from 'fs'; // Required for the 'view' route
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import type { JwtUser } from 'src/auth/types/jwt-user.type';
 interface RequestWithUser extends Request {
   user: {
     uuid: string;
@@ -53,7 +54,8 @@ export class FilesController {
       nidImage?: Express.Multer.File[];
       businessLogo?: Express.Multer.File[];
     },
-    @GetUser('uuid') uuid: string,
+    @GetUser() user: JwtUser,
+    @Query('businessId') businessId: number,
   ) {
     const profileFile = files.profileImage?.[0];
     const nidFile = files.nidImage?.[0];
@@ -61,10 +63,11 @@ export class FilesController {
 
     // Using await ensures the async Prisma operation completes [cite: 171]
     return await this.filesService.updateUserPaths(
-      uuid,
+      user.uuid,
       profileFile?.path,
       nidFile?.path,
       businessLogoFile?.path,
+      businessId,
     );
   }
 

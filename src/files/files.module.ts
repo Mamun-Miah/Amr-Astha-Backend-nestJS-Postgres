@@ -19,18 +19,19 @@ import * as fs from 'fs';
             if (!fs.existsSync(path)) {
               fs.mkdirSync(path, { recursive: true });
             }
+            return cb(null, path);
+          } else {
+            // Dynamic folder selection
+            const subFolder =
+              file.fieldname === 'nidImage' ? 'documents' : 'profiles';
+            const path = `./uploads/seller/${subFolder}`;
+
+            // Ensure directories exist
+            if (!fs.existsSync(path)) {
+              fs.mkdirSync(path, { recursive: true });
+            }
             cb(null, path);
           }
-          // Dynamic folder selection
-          const subFolder =
-            file.fieldname === 'nidImage' ? 'documents' : 'profiles';
-          const path = `./uploads/seller/${subFolder}`;
-
-          // Ensure directories exist
-          if (!fs.existsSync(path)) {
-            fs.mkdirSync(path, { recursive: true });
-          }
-          cb(null, path);
         },
         filename: (req, file, cb) => {
           // Secure filename with unique suffix to avoid collisions
