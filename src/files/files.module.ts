@@ -14,6 +14,13 @@ import * as fs from 'fs';
       },
       storage: diskStorage({
         destination: (req, file, cb) => {
+          if (file.fieldname === 'businessLogo') {
+            const path = `./uploads/seller/business`;
+            if (!fs.existsSync(path)) {
+              fs.mkdirSync(path, { recursive: true });
+            }
+            cb(null, path);
+          }
           // Dynamic folder selection
           const subFolder =
             file.fieldname === 'nidImage' ? 'documents' : 'profiles';
