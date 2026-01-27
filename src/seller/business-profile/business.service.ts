@@ -66,18 +66,60 @@ export class BusinessService {
         data: business,
       };
     } catch (error) {
-      // Log error
-      console.error(error);
-
-      // If it's already a NestJS exception, rethrow it
+      // console.error(error);
       if (error instanceof NotFoundException) {
         throw error;
       }
-
-      // Prisma errors and others
       throw new InternalServerErrorException(
         'Failed to create business profile',
       );
+    }
+  }
+  async getBusinessProfile(uuid: string) {
+    try {
+      // Find userId
+      const findUserbyUuid = await this.prisma.user.findUnique({
+        where: { uuid },
+        select: { id: true },
+      });
+
+      if (!findUserbyUuid) {
+        throw new NotFoundException('User not found');
+      }
+
+      // Find business
+      const getBusinessProfileData = await this.prisma.businessInfo.findFirst({
+        where: { userId: findUserbyUuid.id },
+        select: {
+          businessName: true,
+          businessLogoUrl: true,
+          businessType: true,
+          businessAddress: true,
+          businessPhone: true,
+          businessEmail: true,
+          businessWebsite: true,
+          businessTradeLicense: true,
+          businessWareHouse: true,
+          businessStoreFrontLink: true,
+          businessCategoryId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      if (!getBusinessProfileData) {
+        throw new NotFoundException('Business profile not found');
+      }
+
+      return {
+        success: true,
+        data: getBusinessProfileData,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Failed to get business profile');
     }
   }
 }
