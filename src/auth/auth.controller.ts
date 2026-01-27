@@ -26,7 +26,7 @@ export class AuthController {
       // secure: process.env.NODE_ENV === 'production',
       secure: false,
       // sameSite: 'lax',
-      sameSite: 'none',
+      sameSite: 'lax',
       maxAge: 3600000, // 1 hour
       path: '/',
     });
@@ -52,7 +52,7 @@ export class AuthController {
         // secure: process.env.NODE_ENV === 'production',
         secure: false,
         // sameSite: 'lax',
-        sameSite: 'none',
+        sameSite: 'lax',
         maxAge: 3600000,
         path: '/',
       });
