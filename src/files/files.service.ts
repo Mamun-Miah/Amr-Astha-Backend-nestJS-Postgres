@@ -11,30 +11,40 @@ export class FilesService {
     nidPath?: string,
     businessLogoPath?: string,
   ) {
-    if (businessLogoPath) {
-      //find user id by uuid
+    try {
+      if (businessLogoPath) {
+        const findUserId = await this.prisma.user.findUnique({
+          where: { uuid: uuid },
+          select: { id: true },
+        });
 
-      const findUserId = await this.prisma.user.findUnique({
+        if (!findUserId) {
+          console.error('User not found');
+          return null;
+        }
+
+        return await this.prisma.businessInfo.update({
+          where: { id: findUserId.id },
+          data: {
+            businessLogoUrl: businessLogoPath.replace(/\\/g, '/'),
+          },
+        });
+      }
+      return await this.prisma.user.update({
         where: { uuid: uuid },
-        select: { id: true },
-      });
-      if (!findUserId) return;
-      return await this.prisma.businessInfo.update({
-        where: { id: findUserId.id },
         data: {
-          businessLogoUrl: businessLogoPath?.replace(/\\/g, '/'),
+          ...(profilePath && {
+            profileImageUrl: profilePath.replace(/\\/g, '/'),
+          }),
+          ...(nidPath && {
+            nidImageUrl: nidPath.replace(/\\/g, '/'),
+          }),
         },
       });
+    } catch (error: unknown) {
+      console.error('Error updating user paths:', error);
+      throw error;
     }
-    return await this.prisma.user.update({
-      where: { uuid: uuid },
-      data: {
-        ...(profilePath && {
-          profileImageUrl: profilePath?.replace(/\\/g, '/'),
-        }),
-        ...(nidPath && { nidImageUrl: nidPath?.replace(/\\/g, '/') }),
-      },
-    });
   }
 
   async validateFileAccess(
