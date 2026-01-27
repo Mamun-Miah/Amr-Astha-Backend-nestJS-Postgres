@@ -60,4 +60,25 @@ export class FilesService {
 
     return normRequested === normProfile || normRequested === normNid;
   }
+  async validateBusinessLogoAccess(
+    businessId: number,
+    requestedPath: string,
+  ): Promise<boolean> {
+    // Find business info owned by this user
+    const business = await this.prisma.businessInfo.findFirst({
+      where: {
+        id: businessId,
+      },
+      select: {
+        businessLogoUrl: true,
+      },
+    });
+
+    if (!business?.businessLogoUrl) return false;
+
+    const normRequested = requestedPath.replace(/\\/g, '/');
+    const normLogo = business.businessLogoUrl.replace(/\\/g, '/');
+
+    return normRequested === normLogo;
+  }
 }

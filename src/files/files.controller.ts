@@ -12,6 +12,7 @@ import {
   ForbiddenException,
   Req,
   Res,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
@@ -108,5 +109,47 @@ export class FilesController {
 
     const file = createReadStream(absolutePath);
     return new StreamableFile(file);
+  }
+  @Get('view-business-logo')
+  async getBusinessLogo(
+    @Query('businessId', ParseIntPipe) businessId: number,
+    @Query('path') dbPath: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const isValid = await this.filesService.validateBusinessLogoAccess(
+      businessId,
+      dbPath,
+    );
+
+    if (!isValid) {
+      throw new ForbiddenException('Not authorized');
+    }
+
+    // Prevent directory traversal
+    if (!dbPath.startsWith('uploads/seller/business/')) {
+      throw new ForbiddenException('Invalid file path');
+    }
+
+    const absolutePath = join(process.cwd(), normalize(dbPath));
+
+    if (!existsSync(absolutePath)) {
+      throw new NotFoundException('File not found');
+    }
+
+    const extension = extname(absolutePath).toLowerCase();
+
+    const mimeTypes: Record<string, string> = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.webp': 'image/webp',
+    };
+
+    res.set({
+      'Content-Type': mimeTypes[extension] ?? 'application/octet-stream',
+      'Content-Disposition': 'inline',
+    });
+
+    return new StreamableFile(createReadStream(absolutePath));
   }
 }
