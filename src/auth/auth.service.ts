@@ -63,6 +63,7 @@ export class AuthService {
     const { passwordHash: _, ...result } = user;
     return {
       success: true,
+      message: 'User registered successfully',
       data: result,
     };
   }
@@ -204,6 +205,7 @@ export class AuthService {
     return {
       accessToken,
       success: true,
+      message: 'Login successful',
       user: {
         id: user.id,
         uuid: user.uuid,

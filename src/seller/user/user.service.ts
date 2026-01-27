@@ -54,6 +54,7 @@ export class UserService {
       this.logger.info({ sellerUUID }, 'Seller profile updated successfully');
       return {
         success: true,
+        message: 'Seller profile updated successfully',
         data: user,
       };
     } catch (error: unknown) {
@@ -86,7 +87,11 @@ export class UserService {
       if (!user) {
         throw new NotFoundException(`Seller with UUID ${sellerUUID} not found`);
       }
-      return { success: true, data: user };
+      return {
+        success: true,
+        message: 'Seller profile fetched successfully',
+        data: user,
+      };
     } catch (error: unknown) {
       if (error instanceof HttpException) {
         throw error;

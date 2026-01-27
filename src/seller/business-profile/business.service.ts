@@ -73,6 +73,7 @@ export class BusinessService {
 
       return {
         success: true,
+        message: 'Business profile created successfully',
         data: business,
       };
     } catch (error) {
@@ -124,6 +125,7 @@ export class BusinessService {
 
       return {
         success: true,
+        message: 'Business profile retrieved successfully',
         data: getBusinessProfileData,
       };
     } catch (error) {
