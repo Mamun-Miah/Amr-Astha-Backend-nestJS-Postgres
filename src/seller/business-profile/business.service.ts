@@ -3,6 +3,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
   HttpException,
+  ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -28,7 +29,7 @@ export interface BusinessProfile {
 @Injectable()
 export class BusinessService {
   constructor(private prisma: PrismaService) {}
-
+  //updated business profile
   async updateBusinessProfile(
     uuid: string,
     bussinessProfileData: BusinessProfile,
@@ -44,12 +45,12 @@ export class BusinessService {
         throw new NotFoundException('User not found');
       }
       //find Unique user by email
-      const findUserbyEmail = await this.prisma.user.findUnique({
-        where: { email: bussinessProfileData.businessEmail },
+      const findUserbyEmail = await this.prisma.businessInfo.findUnique({
+        where: { businessEmail: bussinessProfileData.businessEmail },
       });
 
       if (findUserbyEmail) {
-        throw new NotFoundException('Email already exists');
+        throw new ConflictException('Email already exists');
       }
 
       // Create business profile
@@ -76,7 +77,7 @@ export class BusinessService {
       };
     } catch (error) {
       console.error(error);
-      if (error instanceof NotFoundException) {
+      if (error instanceof HttpException) {
         throw error;
       }
       throw new InternalServerErrorException(
@@ -84,6 +85,7 @@ export class BusinessService {
       );
     }
   }
+  //get business profile
   async getBusinessProfile(uuid: string) {
     try {
       // Find userId
@@ -99,6 +101,21 @@ export class BusinessService {
       // Find business
       const getBusinessProfileData = await this.prisma.businessInfo.findFirst({
         where: { userId: findUserbyUuid.id },
+        select: {
+          businessName: true,
+          businessLogoUrl: true,
+          businessType: true,
+          businessAddress: true,
+          businessPhone: true,
+          businessEmail: true,
+          businessWebsite: true,
+          businessTradeLicense: true,
+          businessWareHouse: true,
+          businessStoreFrontLink: true,
+          businessCategoryId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       });
 
       if (!getBusinessProfileData) {
@@ -113,7 +130,7 @@ export class BusinessService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException('Failed to get business profile');
     }
   }
 }
