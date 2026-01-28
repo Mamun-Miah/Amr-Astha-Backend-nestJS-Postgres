@@ -1,10 +1,13 @@
-import { Controller, Body, Post, UseGuards, Res } from '@nestjs/common';
+import { Controller, Body, Post, UseGuards, Res, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RequestOtpDto, VerifyOtpDto } from './dto/otp.dto';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import express from 'express';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { GetUser } from './decorators/get-user.decorator';
+import type { JwtUser } from './types/jwt-user.type';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -61,5 +64,13 @@ export class AuthController {
     }
 
     return result;
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('status')
+  getStatus(@GetUser() user: JwtUser) {
+    return {
+      loggedIn: true,
+      user: user,
+    };
   }
 }
