@@ -56,3 +56,58 @@ export class CreateBusinessProfileDto {
   @IsNotEmpty()
   businessCategoryId: number;
 }
+export class PatchBusinessProfileDto {
+  @IsNumber()
+  @IsOptional()
+  userId: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  businessName: string;
+
+  @IsString()
+  @IsOptional()
+  businessLogoUrl?: string;
+
+  @IsEnum(BusinessTypeEnum)
+  @IsOptional()
+  businessType: BusinessTypeEnum;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  businessAddress: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  businessPhone: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  businessEmail: string;
+
+  @IsString()
+  @IsOptional()
+  businessWebsite?: string;
+
+  @IsString()
+  @IsOptional()
+  businessTradeLicense?: string;
+
+  @IsString()
+  @IsOptional()
+  businessWareHouse?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  businessStoreFrontLink: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @IsOptional()
+  businessCategoryId: number;
+}

@@ -1,8 +1,6 @@
 import {
   BadRequestException,
-  HttpException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -36,73 +34,49 @@ export class UserService {
     }
 
     // Update user profile
-    try {
-      const user = await this.prisma.user.update({
-        where: { uuid: sellerUUID },
-        data: {
-          name: sellerProfileData.name,
-          phone: sellerProfileData.phone,
-          address: sellerProfileData.address,
-        },
-        select: {
-          name: true,
-          phone: true,
-          email: true,
-          address: true,
-        },
-      });
-      this.logger.info({ sellerUUID }, 'Seller profile updated successfully');
-      return {
-        success: true,
-        message: 'Seller profile updated successfully',
-        data: user,
-      };
-    } catch (error: unknown) {
-      this.logger.error(
-        {
-          err: error instanceof Error ? error : new Error(String(error)),
-          sellerUUID,
-        },
-        'Failed to update seller profile',
-      );
-      throw new InternalServerErrorException('Failed to update seller profile');
-    }
+    const user = await this.prisma.user.update({
+      where: { uuid: sellerUUID },
+      data: {
+        name: sellerProfileData.name,
+        phone: sellerProfileData.phone,
+        address: sellerProfileData.address,
+      },
+      select: {
+        name: true,
+        phone: true,
+        email: true,
+        address: true,
+      },
+    });
+    this.logger.info({ sellerUUID }, 'Seller profile updated successfully');
+    return {
+      success: true,
+      message: 'Seller profile updated successfully',
+      data: user,
+    };
   }
   async getSellerProfile(sellerUUID: string) {
     //find user by uuid
 
-    try {
-      const user = await this.prisma.user.findUnique({
-        where: { uuid: sellerUUID },
-        select: {
-          uuid: true,
-          name: true,
-          phone: true,
-          email: true,
-          address: true,
-          nidImageUrl: true,
-          profileImageUrl: true,
-        },
-      });
-      if (!user) {
-        throw new NotFoundException(`Seller with UUID ${sellerUUID} not found`);
-      }
-      return {
-        success: true,
-        message: 'Seller profile fetched successfully',
-        data: user,
-      };
-    } catch (error: unknown) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      this.logger.error(
-        {
-          error: error,
-        },
-        'Failed to get seller profile',
-      );
-      throw new InternalServerErrorException('Failed to get seller profile');
+    const user = await this.prisma.user.findUnique({
+      where: { uuid: sellerUUID },
+      select: {
+        uuid: true,
+        name: true,
+        phone: true,
+        email: true,
+        address: true,
+        nidImageUrl: true,
+        profileImageUrl: true,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException(`Seller with UUID ${sellerUUID} not found`);
     }
+    return {
+      success: true,
+      message: 'Seller profile fetched successfully',
+      data: user,
+    };
   }
 }

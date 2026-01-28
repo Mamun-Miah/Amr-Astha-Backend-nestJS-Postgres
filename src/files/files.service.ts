@@ -17,37 +17,32 @@ export class FilesService {
     businessId?: number,
     businessTradeLicensePath?: string,
   ) {
-    try {
-      if (businessLogoPath && businessId) {
-        return await this.prisma.businessInfo.update({
-          where: { id: businessId },
-          data: {
-            businessLogoUrl: businessLogoPath.replace(/\\/g, '/'),
-          },
-        });
-      } else if (businessTradeLicensePath && businessId) {
-        return await this.prisma.businessInfo.update({
-          where: { id: businessId },
-          data: {
-            businessTradeLicense: businessTradeLicensePath.replace(/\\/g, '/'),
-          },
-        });
-      } else {
-        return await this.prisma.user.update({
-          where: { uuid: uuid },
-          data: {
-            ...(profilePath && {
-              profileImageUrl: profilePath.replace(/\\/g, '/'),
-            }),
-            ...(nidPath && {
-              nidImageUrl: nidPath.replace(/\\/g, '/'),
-            }),
-          },
-        });
-      }
-    } catch (error: unknown) {
-      console.error('Error updating user paths:', error);
-      throw error;
+    if (businessLogoPath && businessId) {
+      return await this.prisma.businessInfo.update({
+        where: { id: businessId },
+        data: {
+          businessLogoUrl: businessLogoPath.replace(/\\/g, '/'),
+        },
+      });
+    } else if (businessTradeLicensePath && businessId) {
+      return await this.prisma.businessInfo.update({
+        where: { id: businessId },
+        data: {
+          businessTradeLicense: businessTradeLicensePath.replace(/\\/g, '/'),
+        },
+      });
+    } else {
+      return await this.prisma.user.update({
+        where: { uuid: uuid },
+        data: {
+          ...(profilePath && {
+            profileImageUrl: profilePath.replace(/\\/g, '/'),
+          }),
+          ...(nidPath && {
+            nidImageUrl: nidPath.replace(/\\/g, '/'),
+          }),
+        },
+      });
     }
   }
 

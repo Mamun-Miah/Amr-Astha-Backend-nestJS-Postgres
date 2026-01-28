@@ -42,42 +42,31 @@ export class AuthService {
 
   // SIGNUP)
   async signup(dto: RegisterUserDto) {
-    try {
-      const existingUser = await this.findUserByEmail(dto.email);
+    const existingUser = await this.findUserByEmail(dto.email);
 
-      if (existingUser) {
-        this.logger.warn({ email: dto.email }, 'Signup failed: Email exists');
-        throw new BadRequestException('Email already exists');
-      }
-
-      const passwordHash = await bcrypt.hash(dto.password, roundsOfHashing);
-
-      const user = await this.prisma.user.create({
-        data: {
-          name: dto.name,
-          email: dto.email,
-          phone: dto.phone,
-          provider: AuthProvider.EMAIL,
-          passwordHash,
-        },
-      });
-      this.logger.info({ userId: user.id }, 'User registered');
-      const { passwordHash: _, ...result } = user;
-      return {
-        success: true,
-        message: 'User registered successfully',
-        data: result,
-      };
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      this.logger.error(
-        { error: error instanceof Error ? error : new Error(String(error)) },
-        'Failed to register user',
-      );
-      throw new InternalServerErrorException('Failed to register user');
+    if (existingUser) {
+      this.logger.warn({ email: dto.email }, 'Signup failed: Email exists');
+      throw new BadRequestException('Email already exists');
     }
+
+    const passwordHash = await bcrypt.hash(dto.password, roundsOfHashing);
+
+    const user = await this.prisma.user.create({
+      data: {
+        name: dto.name,
+        email: dto.email,
+        phone: dto.phone,
+        provider: AuthProvider.EMAIL,
+        passwordHash,
+      },
+    });
+    this.logger.info({ userId: user.id }, 'User registered');
+    const { passwordHash: _, ...result } = user;
+    return {
+      success: true,
+      message: 'User registered successfully',
+      data: result,
+    };
   }
 
   /**
@@ -86,165 +75,137 @@ export class AuthService {
   async sendOtp(uuid: string) {
     const otp = randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 5 * 60000); // 5 mins expiry
-
-    try {
-      //find user by uuid
-      const user = await this.findUserByUuid(uuid);
-      if (!user) {
-        this.logger.warn({ uuid }, 'OTP request failed: User not found');
-        throw new BadRequestException('User not found');
-      }
-      //if user verified, no need to send OTP
-      if (user.isEmailVerified) {
-        this.logger.info(
-          { uuid },
-          'OTP request ignored: Email already verified',
-        );
-        return {
-          success: true,
-          message: 'Email is already verified',
-        };
-      }
-      const email = user.email;
-
-      //Store OTP in database
-      await this.prisma.otp.upsert({
-        where: { email },
-        update: { code: otp, expiresAt, createdAt: new Date() },
-        create: { email, code: otp, expiresAt },
-      });
-
-      //Send Email
-      await this.mailService.sendMail({
-        to: email,
-        subject: 'Your Verification Code',
-        html: `<h3>Your OTP is: <b>${otp}</b></h3><p>Valid for 5 minutes.</p><br><p>From Amrastha Team</p>`,
-      });
-
-      this.logger.info({ email }, 'OTP sent successfully');
+    //find user by uuid
+    const user = await this.findUserByUuid(uuid);
+    if (!user) {
+      this.logger.warn({ uuid }, 'OTP request failed: User not found');
+      throw new BadRequestException('User not found');
+    }
+    //if user verified, no need to send OTP
+    if (user.isEmailVerified) {
+      this.logger.info({ uuid }, 'OTP request ignored: Email already verified');
       return {
         success: true,
-        message: 'OTP sent to email',
+        message: 'Email is already verified',
       };
-    } catch (error: unknown) {
-      this.logger.error({ error, uuid }, 'Failed to process OTP request');
-      throw new InternalServerErrorException('Error sending verification code');
     }
+    const email = user.email;
+
+    //Store OTP in database
+    await this.prisma.otp.upsert({
+      where: { email },
+      update: { code: otp, expiresAt, createdAt: new Date() },
+      create: { email, code: otp, expiresAt },
+    });
+
+    //Send Email
+    await this.mailService.sendMail({
+      to: email,
+      subject: 'Your Verification Code',
+      html: `<h3>Your OTP is: <b>${otp}</b></h3><p>Valid for 5 minutes.</p><br><p>From Amrastha Team</p>`,
+    });
+
+    this.logger.info({ email }, 'OTP sent successfully');
+    return {
+      success: true,
+      message: 'OTP sent to email',
+    };
   }
 
   async verifyOtp(uuid: string, code: string) {
-    try {
-      //find user by uuid
-      const user = await this.findUserByUuid(uuid);
-      if (!user) {
-        this.logger.warn({ uuid }, 'OTP verification failed: User not found');
-        throw new BadRequestException('User not found');
-      }
-      if (user.isEmailVerified) {
-        this.logger.info(
-          { uuid },
-          'OTP request ignored: Email already verified',
-        );
-        return {
-          success: true,
-          message: 'Email is already verified',
-        };
-      }
-      //find otp record
-      const email = user.email;
-      const otpRecord = await this.prisma.otp.findUnique({ where: { email } });
-
-      if (
-        !otpRecord ||
-        otpRecord.code !== code ||
-        otpRecord.expiresAt < new Date()
-      ) {
-        this.logger.warn({ email }, 'Invalid or expired OTP attempt');
-        throw new BadRequestException('Invalid or expired code');
-      }
-      await this.prisma.user.update({
-        where: { email },
-        data: { isEmailVerified: true },
-      });
-      // Delete OTP after successful use (Single use)
-      await this.prisma.otp.delete({ where: { email } });
-
-      this.logger.info({ email }, 'OTP verified successfully');
-      const payload = {
-        email: user.email,
-        uuid: user.uuid,
-        phone: user.phone,
-        username: user.name,
-        isEmailVerified: user.isEmailVerified,
-      };
-      const accessToken = this.jwtService.sign(payload);
-      return {
-        accessToken,
-        success: true,
-        message: 'Email verified successfully',
-      };
-    } catch (error: unknown) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      this.logger.error({ error, uuid }, 'Failed to verify OTP');
-      throw new InternalServerErrorException('Error verifying OTP');
+    //find user by uuid
+    const user = await this.findUserByUuid(uuid);
+    if (!user) {
+      this.logger.warn({ uuid }, 'OTP verification failed: User not found');
+      throw new BadRequestException('User not found');
     }
+    if (user.isEmailVerified) {
+      this.logger.info({ uuid }, 'OTP request ignored: Email already verified');
+      return {
+        success: true,
+        message: 'Email is already verified',
+      };
+    }
+    //find otp record
+    const email = user.email;
+    const otpRecord = await this.prisma.otp.findUnique({ where: { email } });
+
+    if (
+      !otpRecord ||
+      otpRecord.code !== code ||
+      otpRecord.expiresAt < new Date()
+    ) {
+      this.logger.warn({ email }, 'Invalid or expired OTP attempt');
+      throw new BadRequestException('Invalid or expired code');
+    }
+    await this.prisma.user.update({
+      where: { email },
+      data: { isEmailVerified: true },
+    });
+    // Delete OTP after successful use (Single use)
+    await this.prisma.otp.delete({ where: { email } });
+
+    this.logger.info({ email }, 'OTP verified successfully');
+    const payload = {
+      email: user.email,
+      uuid: user.uuid,
+      phone: user.phone,
+      username: user.name,
+      isEmailVerified: user.isEmailVerified,
+    };
+    const accessToken = this.jwtService.sign(payload);
+    return {
+      accessToken,
+      success: true,
+      message: 'Email verified successfully',
+    };
   }
   // SIGNIN
   async signin(dto: LoginUserDto) {
-    try {
-      const user = await this.findUserByEmail(dto.email);
+    const user = await this.findUserByEmail(dto.email);
 
-      if (!user || !user.passwordHash) {
-        // Security log: User not found
-        this.logger.warn({ email: dto.email }, 'Login failed: User not found');
-        throw new UnauthorizedException('Invalid credentials');
-      }
-
-      const isPasswordValid = await bcrypt.compare(
-        dto.password,
-        user.passwordHash,
-      );
-
-      if (!isPasswordValid) {
-        //Security log: Wrong password
-        this.logger.warn(
-          { userId: user.id, email: user.email },
-          'Login failed: Invalid password',
-        );
-        throw new UnauthorizedException('Invalid credentials');
-      }
-
-      const payload = {
-        email: user.email,
-        uuid: user.uuid,
-        phone: user.phone,
-        username: user.name,
-        isEmailVerified: user.isEmailVerified,
-      };
-      const accessToken = this.jwtService.sign(payload);
-      this.logger.info({ userId: user.id }, 'User logged in successfully');
-
-      return {
-        accessToken,
-        success: true,
-        message: 'Login successful',
-        user: {
-          id: user.id,
-          uuid: user.uuid,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          isEmailVerified: user.isEmailVerified,
-        },
-      };
-    } catch (error: unknown) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      this.logger.error(error, 'Failed to login user');
-      throw new InternalServerErrorException('Failed to login user');
+    if (!user || !user.passwordHash) {
+      // Security log: User not found
+      this.logger.warn({ email: dto.email }, 'Login failed: User not found');
+      throw new UnauthorizedException('Invalid credentials');
     }
+
+    const isPasswordValid = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
+
+    if (!isPasswordValid) {
+      //Security log: Wrong password
+      this.logger.warn(
+        { userId: user.id, email: user.email },
+        'Login failed: Invalid password',
+      );
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const payload = {
+      email: user.email,
+      uuid: user.uuid,
+      phone: user.phone,
+      username: user.name,
+      isEmailVerified: user.isEmailVerified,
+    };
+    const accessToken = this.jwtService.sign(payload);
+    this.logger.info({ userId: user.id }, 'User logged in successfully');
+
+    return {
+      accessToken,
+      success: true,
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        uuid: user.uuid,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        isEmailVerified: user.isEmailVerified,
+      },
+    };
   }
 }

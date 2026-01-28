@@ -3,12 +3,13 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import cookieParser from 'cookie-parser';
+import { GlobalExceptionFilter } from './error-handling/prisma-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
   app.useLogger(app.get(Logger));
-
+  app.useGlobalFilters(new GlobalExceptionFilter());
   app.use(cookieParser());
   app.setGlobalPrefix('api');
   app.enableCors({
