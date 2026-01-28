@@ -78,7 +78,6 @@ export class AuthService {
     //find user by uuid
     const user = await this.findUserByUuid(uuid);
     if (!user) {
-      this.logger.warn({ uuid }, 'OTP request failed: User not found');
       throw new BadRequestException('User not found');
     }
     //if user verified, no need to send OTP
