@@ -15,6 +15,7 @@ export class FilesService {
     nidPath?: string,
     businessLogoPath?: string,
     businessId?: number,
+    businessTradeLicensePath?: string,
   ) {
     try {
       if (businessLogoPath && businessId) {
@@ -24,18 +25,26 @@ export class FilesService {
             businessLogoUrl: businessLogoPath.replace(/\\/g, '/'),
           },
         });
+      } else if (businessTradeLicensePath && businessId) {
+        return await this.prisma.businessInfo.update({
+          where: { id: businessId },
+          data: {
+            businessTradeLicense: businessTradeLicensePath.replace(/\\/g, '/'),
+          },
+        });
+      } else {
+        return await this.prisma.user.update({
+          where: { uuid: uuid },
+          data: {
+            ...(profilePath && {
+              profileImageUrl: profilePath.replace(/\\/g, '/'),
+            }),
+            ...(nidPath && {
+              nidImageUrl: nidPath.replace(/\\/g, '/'),
+            }),
+          },
+        });
       }
-      return await this.prisma.user.update({
-        where: { uuid: uuid },
-        data: {
-          ...(profilePath && {
-            profileImageUrl: profilePath.replace(/\\/g, '/'),
-          }),
-          ...(nidPath && {
-            nidImageUrl: nidPath.replace(/\\/g, '/'),
-          }),
-        },
-      });
     } catch (error: unknown) {
       console.error('Error updating user paths:', error);
       throw error;
@@ -78,6 +87,27 @@ export class FilesService {
 
     const normRequested = requestedPath.replace(/\\/g, '/');
     const normLogo = business.businessLogoUrl.replace(/\\/g, '/');
+
+    return normRequested === normLogo;
+  }
+  async validateBusinessLicenseAccess(
+    businessId: number,
+    requestedPath: string,
+  ): Promise<boolean> {
+    // Find business info owned by this user
+    const business = await this.prisma.businessInfo.findFirst({
+      where: {
+        id: businessId,
+      },
+      select: {
+        businessTradeLicense: true,
+      },
+    });
+
+    if (!business?.businessTradeLicense) return false;
+
+    const normRequested = requestedPath.replace(/\\/g, '/');
+    const normLogo = business.businessTradeLicense.replace(/\\/g, '/');
 
     return normRequested === normLogo;
   }

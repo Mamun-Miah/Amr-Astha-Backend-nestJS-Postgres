@@ -20,6 +20,12 @@ import * as fs from 'fs';
               fs.mkdirSync(path, { recursive: true });
             }
             return cb(null, path);
+          } else if (file.fieldname === 'businessTradeLicense') {
+            const path = `./uploads/seller/documents`;
+            if (!fs.existsSync(path)) {
+              fs.mkdirSync(path, { recursive: true });
+            }
+            return cb(null, path);
           } else {
             // Dynamic folder selection
             const subFolder =

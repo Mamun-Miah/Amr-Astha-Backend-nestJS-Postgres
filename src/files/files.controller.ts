@@ -39,6 +39,7 @@ export class FilesController {
       { name: 'profileImage', maxCount: 1 },
       { name: 'nidImage', maxCount: 1 },
       { name: 'businessLogo', maxCount: 1 },
+      { name: 'businessTradeLicense', maxCount: 1 },
     ]),
   )
   async uploadSellerFiles(
@@ -54,6 +55,7 @@ export class FilesController {
       profileImage?: Express.Multer.File[];
       nidImage?: Express.Multer.File[];
       businessLogo?: Express.Multer.File[];
+      businessTradeLicense?: Express.Multer.File[];
     },
     @GetUser() user: JwtUser,
     @Query('businessId') businessId: number,
@@ -61,6 +63,7 @@ export class FilesController {
     const profileFile = files.profileImage?.[0];
     const nidFile = files.nidImage?.[0];
     const businessLogoFile = files.businessLogo?.[0];
+    const businessTradeLicenseFile = files.businessTradeLicense?.[0];
 
     // Using await ensures the async Prisma operation completes [cite: 171]
     return await this.filesService.updateUserPaths(
@@ -69,10 +72,11 @@ export class FilesController {
       nidFile?.path,
       businessLogoFile?.path,
       businessId,
+      businessTradeLicenseFile?.path,
     );
   }
 
-  @Get('view-file')
+  @Get('view-file') //profile image and nid card
   async getPrivateFile(
     @Query('path') dbPath: string,
     @Req() req: RequestWithUser,
@@ -127,6 +131,48 @@ export class FilesController {
 
     // Prevent directory traversal
     if (!dbPath.startsWith('uploads/seller/business/')) {
+      throw new ForbiddenException('Invalid file path');
+    }
+
+    const absolutePath = join(process.cwd(), normalize(dbPath));
+
+    if (!existsSync(absolutePath)) {
+      throw new NotFoundException('File not found');
+    }
+
+    const extension = extname(absolutePath).toLowerCase();
+
+    const mimeTypes: Record<string, string> = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.webp': 'image/webp',
+    };
+
+    res.set({
+      'Content-Type': mimeTypes[extension] ?? 'application/octet-stream',
+      'Content-Disposition': 'inline',
+    });
+
+    return new StreamableFile(createReadStream(absolutePath));
+  }
+  @Get('view-business-license')
+  async getBusinessLicense(
+    @Query('businessId', ParseIntPipe) businessId: number,
+    @Query('path') dbPath: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const isValid = await this.filesService.validateBusinessLicenseAccess(
+      businessId,
+      dbPath,
+    );
+
+    if (!isValid) {
+      throw new ForbiddenException('Not authorized');
+    }
+
+    // Prevent directory traversal
+    if (!dbPath.startsWith('uploads/seller/documents/')) {
       throw new ForbiddenException('Invalid file path');
     }
 
