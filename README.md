@@ -173,14 +173,3 @@ is strictly prohibited without prior written permission from the author.
 
 👨‍💻 Author
 Built with ❤️ using NestJS and Prisma.
-
-markdown
-Copy code
-
-If you want, I can:
-- Add **Swagger API docs section**
-- Add **Docker setup**
-- Customize it for **Maple IT Firm branding**
-- Add **API endpoint examples**
-
-Just tell me 😄
