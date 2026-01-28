@@ -97,7 +97,7 @@ export class AuthService {
       create: { email, code: otp, expiresAt },
     });
 
-    //Send Email
+    //Send Email dsg
     await this.mailService.sendMail({
       to: email,
       subject: 'Your Verification Code',
