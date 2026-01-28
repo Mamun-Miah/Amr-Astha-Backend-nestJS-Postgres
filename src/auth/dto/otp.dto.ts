@@ -8,6 +8,7 @@ export class RequestOtpDto {
 
 export class VerifyOtpDto {
   @IsNotEmpty()
+  @IsUUID()
   uuid: string;
 
   @IsString()
