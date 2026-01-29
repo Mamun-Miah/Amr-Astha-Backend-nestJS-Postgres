@@ -14,3 +14,5 @@ MAIL_PASS=fjahsvjmcvrsqcqlmamun
 
 #Cors
 CLIENT_URL=http://localhost:3000
+# link expiration 
+LINK_EXPIRY_DAYS=14
