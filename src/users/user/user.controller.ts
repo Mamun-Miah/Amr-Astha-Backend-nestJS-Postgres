@@ -6,7 +6,7 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import type { JwtUser } from 'src/auth/types/jwt-user.type';
 
 @UseGuards(JwtAuthGuard)
-@Controller('seller/my-profile')
+@Controller('user/my-profile')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

@@ -18,7 +18,7 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import type { JwtUser } from 'src/auth/types/jwt-user.type';
 
 @UseGuards(JwtAuthGuard)
-@Controller('seller/business-profile')
+@Controller('user/business-profile')
 export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}
 

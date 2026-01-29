@@ -29,7 +29,7 @@ interface RequestWithUser extends Request {
   };
 }
 @UseGuards(JwtAuthGuard)
-@Controller('seller')
+@Controller('user')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 

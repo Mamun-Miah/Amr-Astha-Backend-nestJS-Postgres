@@ -5,15 +5,15 @@ import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { UserModule } from './seller/user/user.module';
+import { UserModule } from './users/user/user.module';
 import * as Joi from 'joi';
 import { LoggerModule } from 'nestjs-pino/LoggerModule';
 import { MailModule } from './mail/mail.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { FilesModule } from './files/files.module';
-import { OrderModule } from './seller/order-creation/order.module';
-import { BusinessModule } from './seller/business-profile/business.module';
-import { ShareLinkModule } from './seller/share-link/share-link.module';
+import { OrderModule } from './users/order-creation/order.module';
+import { BusinessModule } from './users/business-profile/business.module';
+import { ShareLinkModule } from './users/share-link/share-link.module';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
