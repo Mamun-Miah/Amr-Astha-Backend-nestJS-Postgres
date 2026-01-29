@@ -108,7 +108,7 @@ model OrderCreation {
 model LinkCreated {
   id            Int            @id @default(autoincrement())
   uuid          String         @unique @default(uuid()) @db.Uuid
-  link          String
+  link          String  
   createdAt     DateTime       @default(now())
   expiry        DateTime
   //Relations

@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsEmail,
   IsDateString,
+  IsInt,
 } from 'class-validator';
 
 export class CreateOrderDto {
@@ -45,5 +46,15 @@ export class CreateOrderDto {
   invoiceUrl: string;
 
   @IsString()
-  profOfDelivery: string; // Proof of delivery
+  profOfDelivery: string;
+}
+export class CreateLinkDto {
+  @IsString()
+  link: string;
+
+  @IsDateString()
+  expiry: string;
+
+  @IsInt()
+  orderId: number;
 }
