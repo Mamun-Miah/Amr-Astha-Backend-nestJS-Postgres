@@ -175,7 +175,6 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      //Security log: Wrong password
       this.logger.warn(
         { userId: user.id, email: user.email },
         'Login failed: Invalid password',
@@ -183,20 +182,28 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = {
-      email: user.email,
-      uuid: user.uuid,
-      phone: user.phone,
-      username: user.name,
-      isEmailVerified: user.isEmailVerified,
-    };
-    const accessToken = this.jwtService.sign(payload);
-    this.logger.info({ userId: user.id }, 'User logged in successfully');
+    let accessToken: string | null = null;
+    if (user.isEmailVerified) {
+      const payload = {
+        email: user.email,
+        uuid: user.uuid,
+        phone: user.phone,
+        username: user.name,
+        isEmailVerified: user.isEmailVerified,
+      };
+      accessToken = this.jwtService.sign(payload);
+      this.logger.info({ userId: user.id }, 'User logged in successfully');
+    } else {
+      this.logger.warn(
+        { userId: user.id },
+        'Login successful but email not verified',
+      );
+    }
 
     return {
       accessToken,
       success: true,
-      message: 'Login successful',
+      message: user.isEmailVerified ? 'Login successful' : 'Email not verified',
       user: {
         id: user.id,
         uuid: user.uuid,

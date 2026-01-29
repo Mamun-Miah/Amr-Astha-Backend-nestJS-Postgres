@@ -11,7 +11,7 @@ import { LoggerModule } from 'nestjs-pino/LoggerModule';
 import { MailModule } from './mail/mail.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { FilesModule } from './files/files.module';
-import OrderModule from './seller/order-creation/order.module';
+import { OrderModule } from './seller/order-creation/order.module';
 import { BusinessModule } from './seller/business-profile/business.module';
 @Module({
   imports: [

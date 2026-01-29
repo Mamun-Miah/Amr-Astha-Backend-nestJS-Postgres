@@ -42,6 +42,23 @@ export class FilesService {
             nidImageUrl: nidPath.replace(/\\/g, '/'),
           }),
         },
+        select: {
+          id: true,
+          uuid: true,
+          name: true,
+          email: true,
+          phone: true,
+          address: true,
+          provider: true,
+          providerId: true,
+          profileImageUrl: true,
+          nidImageUrl: true,
+          isEmailVerified: true,
+          isPhoneVerified: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       });
     }
   }
