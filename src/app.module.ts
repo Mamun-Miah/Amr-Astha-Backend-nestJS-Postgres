@@ -13,7 +13,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { FilesModule } from './files/files.module';
 import { OrderModule } from './users/order-creation/order.module';
 import { BusinessModule } from './users/business-profile/business.module';
-import { ShareLinkModule } from './users/share-link/share-link.module';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -61,7 +60,6 @@ import { ShareLinkModule } from './users/share-link/share-link.module';
     FilesModule,
     BusinessModule,
     OrderModule,
-    ShareLinkModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
