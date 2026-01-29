@@ -11,6 +11,7 @@ import { LoggerModule } from 'nestjs-pino/LoggerModule';
 import { MailModule } from './mail/mail.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { FilesModule } from './files/files.module';
+import OrderModule from './seller/order-creation/order.module';
 import { BusinessModule } from './seller/business-profile/business.module';
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { BusinessModule } from './seller/business-profile/business.module';
     MailModule,
     FilesModule,
     BusinessModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
