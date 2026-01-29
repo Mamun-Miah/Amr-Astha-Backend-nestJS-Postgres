@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-
+import { randomUUID } from 'crypto';
 @Injectable()
 export class OrderService {
   constructor(private prisma: PrismaService) {}
@@ -32,7 +32,7 @@ export class OrderService {
     expiryDate.setDate(expiryDate.getDate() + expiryDays);
     //Create Link
     const cleanInvoice = order.invoiceNumber.replace(/^INV-/, '');
-    const link = `${order.id}-${cleanInvoice}-${userId}-${uuid}`;
+    const link = `${order.id}-${cleanInvoice}-${userId}-${uuid}-${randomUUID()}`;
     //create link data
     const createLink = await this.prisma.linkCreated.create({
       data: {
@@ -48,7 +48,6 @@ export class OrderService {
       data: {
         order: order,
         link: createLink,
-        message: 'in Production Link Data it will not show',
       },
     };
   }
@@ -60,7 +59,18 @@ export class OrderService {
       where: {
         userId: userId,
       },
+      include: {
+        linkCreated: {
+          select: {
+            link: true,
+          },
+        },
+      },
     });
-    return orders;
+    return orders.map((order) => ({
+      ...order,
+      link: order.linkCreated[0]?.link ?? null,
+      linkCreated: undefined,
+    }));
   }
 }
