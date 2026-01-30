@@ -32,7 +32,7 @@ export class OrderService {
     expiryDate.setDate(expiryDate.getDate() + expiryDays);
     //Create Link
     const cleanInvoice = order.invoiceNumber.replace(/^INV-/, '');
-    const link = `${order.id}-${cleanInvoice}-${userId}-${uuid}-${randomUUID()}`;
+    const link = `${order.uuid}-${cleanInvoice}-${userId}-${uuid}-${randomUUID()}`;
     //create link data
     const createLink = await this.prisma.linkCreated.create({
       data: {

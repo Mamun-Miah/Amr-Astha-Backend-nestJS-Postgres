@@ -65,7 +65,7 @@ model BusinessInfo {
   businessLogoUrl        String?
   businessType           BusinessTypeEnum
   businessAddress        String
-  businessPhone          String?     
+  businessPhone          String?
   businessEmail          String           @unique
   businessWebsite        String?
   businessTradeLicense   String?
@@ -83,9 +83,10 @@ model BusinessInfo {
 }
 
 model OrderCreation {
-  id                 Int           @id @default(autoincrement())
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  id                 Int            @id @default(autoincrement())
+  uuid               String         @unique @default(uuid()) @db.Uuid
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
   orderDate          DateTime
   deliveryDate       DateTime
   productName        String
@@ -96,25 +97,25 @@ model OrderCreation {
   customerEmail      String?
   customerPhone      String
   customerAddress    String
-  invoiceNumber      String        @unique
+  invoiceNumber      String         @unique
   invoiceUrl         String
   profOfDelivery     String
   //relations
   userId             Int
-  user               User          @relation(fields: [userId], references: [id])
+  user               User           @relation(fields: [userId], references: [id])
   linkCreated        LinkCreated[]
+  sellerReviews      SellerReview[]
 }
 
 model LinkCreated {
-  id            Int            @id @default(autoincrement())
-  uuid          String         @unique @default(uuid()) @db.Uuid
-  link          String  
-  createdAt     DateTime       @default(now())
+  id            Int           @id @default(autoincrement())
+  uuid          String        @unique @default(uuid()) @db.Uuid
+  link          String
+  createdAt     DateTime      @default(now())
   expiry        DateTime
   //Relations
   orderId       Int
-  orderCreation OrderCreation  @relation(fields: [orderId], references: [id])
-  sellerReview  SellerReview[]
+  orderCreation OrderCreation @relation(fields: [orderId], references: [id])
   sellerScores  SellerScore[]
 }
 
@@ -125,15 +126,15 @@ enum ReviewEnum {
 }
 
 model SellerReview {
-  id          Int         @id @default(autoincrement())
-  review      ReviewEnum
-  complain    String?
-  createdAt   DateTime    @default(now())
-  attachment  String?
+  id            Int           @id @default(autoincrement())
+  review        ReviewEnum
+  complain      String?
+  createdAt     DateTime      @default(now())
+  attachment    String?
   //relations
-  orderId     Int
-  linkCreated LinkCreated @relation(fields: [orderId], references: [id])
-  disputes    Disputes[]
+  orderId       Int
+  orderCreation OrderCreation @relation(fields: [orderId], references: [id])
+  disputes      Disputes[]
 }
 
 model Disputes {

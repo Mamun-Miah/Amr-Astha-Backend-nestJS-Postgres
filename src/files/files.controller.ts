@@ -65,8 +65,8 @@ export class FilesController {
       profOfDeliveryFiles?: Express.Multer.File[];
     },
     @GetUser() user: JwtUser,
-    @Query('businessId') businessId: number,
-    orderId?: number,
+    @Query('businessId') businessId?: number,
+    @Query('orderId') orderId?: number,
   ) {
     const profileFile = files.profileImage?.[0];
     const nidFile = files.nidImage?.[0];
