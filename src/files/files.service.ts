@@ -8,7 +8,9 @@ import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class FilesService {
   constructor(private prisma: PrismaService) {}
+  //
   //update files upload path
+  //
   async updateUserPaths(
     uuid: string,
     profilePath?: string,
@@ -16,6 +18,8 @@ export class FilesService {
     businessLogoPath?: string,
     businessId?: number,
     businessTradeLicensePath?: string,
+    invoiceFilesPath?: string,
+    profOfDeliveryFilesPath?: string,
   ) {
     if (businessLogoPath && businessId) {
       return await this.prisma.businessInfo.update({
@@ -29,6 +33,20 @@ export class FilesService {
         where: { id: businessId },
         data: {
           businessTradeLicense: businessTradeLicensePath.replace(/\\/g, '/'),
+        },
+      });
+    } else if (invoiceFilesPath && businessId) {
+      return await this.prisma.orderCreation.update({
+        where: { id: businessId },
+        data: {
+          invoiceUrl: invoiceFilesPath.replace(/\\/g, '/'),
+        },
+      });
+    } else if (profOfDeliveryFilesPath && businessId) {
+      return await this.prisma.orderCreation.update({
+        where: { id: businessId },
+        data: {
+          profOfDelivery: profOfDeliveryFilesPath.replace(/\\/g, '/'),
         },
       });
     } else {

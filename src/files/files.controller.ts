@@ -40,8 +40,13 @@ export class FilesController {
       { name: 'nidImage', maxCount: 1 },
       { name: 'businessLogo', maxCount: 1 },
       { name: 'businessTradeLicense', maxCount: 1 },
+      { name: 'invoiceFiles', maxCount: 1 },
+      { name: 'profOfDeliveryFiles', maxCount: 1 },
     ]),
   )
+  //
+  //uploadFiles all
+  //
   async uploadSellerFiles(
     @UploadedFiles(
       new ParseFilePipe({
@@ -56,6 +61,8 @@ export class FilesController {
       nidImage?: Express.Multer.File[];
       businessLogo?: Express.Multer.File[];
       businessTradeLicense?: Express.Multer.File[];
+      invoiceFiles?: Express.Multer.File[];
+      profOfDeliveryFiles?: Express.Multer.File[];
     },
     @GetUser() user: JwtUser,
     @Query('businessId') businessId: number,
@@ -64,8 +71,9 @@ export class FilesController {
     const nidFile = files.nidImage?.[0];
     const businessLogoFile = files.businessLogo?.[0];
     const businessTradeLicenseFile = files.businessTradeLicense?.[0];
+    const invoiceFiles = files.invoiceFiles?.[0];
+    const profOfDeliveryFiles = files.profOfDeliveryFiles?.[0];
 
-    // Using await ensures the async Prisma operation completes [cite: 171]
     return await this.filesService.updateUserPaths(
       user.uuid,
       profileFile?.path,
@@ -73,9 +81,13 @@ export class FilesController {
       businessLogoFile?.path,
       businessId,
       businessTradeLicenseFile?.path,
+      invoiceFiles?.path,
+      profOfDeliveryFiles?.path,
     );
   }
-
+  //
+  //getFilesProfiles and nid
+  //
   @Get('view-file') //profile image and nid card
   async getPrivateFile(
     @Query('path') dbPath: string,
@@ -95,7 +107,6 @@ export class FilesController {
     // Detect extension (e.g., .png, .jpg, .pdf)
     const extension = extname(absolutePath).toLowerCase();
 
-    // Set the correct Content-Type
     const mimeTypes: Record<string, string> = {
       '.pdf': 'application/pdf',
       '.png': 'image/png',
@@ -114,6 +125,9 @@ export class FilesController {
     const file = createReadStream(absolutePath);
     return new StreamableFile(file);
   }
+  //
+  //getBusinessLogo
+  //
   @Get('view-business-logo')
   async getBusinessLogo(
     @Query('businessId', ParseIntPipe) businessId: number,
@@ -156,6 +170,9 @@ export class FilesController {
 
     return new StreamableFile(createReadStream(absolutePath));
   }
+  //
+  //getBusinessLicense
+  //
   @Get('view-business-license')
   async getBusinessLicense(
     @Query('businessId', ParseIntPipe) businessId: number,
