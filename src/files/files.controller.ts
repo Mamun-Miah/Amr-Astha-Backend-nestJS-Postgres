@@ -66,6 +66,7 @@ export class FilesController {
     },
     @GetUser() user: JwtUser,
     @Query('businessId') businessId: number,
+    orderId?: number,
   ) {
     const profileFile = files.profileImage?.[0];
     const nidFile = files.nidImage?.[0];
@@ -80,6 +81,7 @@ export class FilesController {
       nidFile?.path,
       businessLogoFile?.path,
       businessId,
+      orderId,
       businessTradeLicenseFile?.path,
       invoiceFiles?.path,
       profOfDeliveryFiles?.path,

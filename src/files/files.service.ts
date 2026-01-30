@@ -38,22 +38,21 @@ export class FilesService {
         },
       });
       //order creation
-    } else if (invoiceFilesPath && orderId) {
+    } else if ((invoiceFilesPath || profOfDeliveryFilesPath) && orderId) {
       return await this.prisma.orderCreation.update({
-        where: { id: businessId },
+        where: { id: orderId },
         data: {
-          invoiceUrl: invoiceFilesPath.replace(/\\/g, '/'),
+          ...(invoiceFilesPath && {
+            invoiceUrl: invoiceFilesPath.replace(/\\/g, '/'),
+          }),
+          ...(profOfDeliveryFilesPath && {
+            profOfDelivery: profOfDeliveryFilesPath.replace(/\\/g, '/'),
+          }),
         },
       });
-    } else if (profOfDeliveryFilesPath && orderId) {
-      return await this.prisma.orderCreation.update({
-        where: { id: businessId },
-        data: {
-          profOfDelivery: profOfDeliveryFilesPath.replace(/\\/g, '/'),
-        },
-      });
-      //profile upload
-    } else {
+    }
+    //profile upload
+    else {
       return await this.prisma.user.update({
         where: { uuid: uuid },
         data: {
