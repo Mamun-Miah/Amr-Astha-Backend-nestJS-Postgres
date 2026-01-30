@@ -17,10 +17,12 @@ export class FilesService {
     nidPath?: string,
     businessLogoPath?: string,
     businessId?: number,
+    orderId?: number,
     businessTradeLicensePath?: string,
     invoiceFilesPath?: string,
     profOfDeliveryFilesPath?: string,
   ) {
+    //business upload
     if (businessLogoPath && businessId) {
       return await this.prisma.businessInfo.update({
         where: { id: businessId },
@@ -35,20 +37,22 @@ export class FilesService {
           businessTradeLicense: businessTradeLicensePath.replace(/\\/g, '/'),
         },
       });
-    } else if (invoiceFilesPath && businessId) {
+      //order creation
+    } else if (invoiceFilesPath && orderId) {
       return await this.prisma.orderCreation.update({
         where: { id: businessId },
         data: {
           invoiceUrl: invoiceFilesPath.replace(/\\/g, '/'),
         },
       });
-    } else if (profOfDeliveryFilesPath && businessId) {
+    } else if (profOfDeliveryFilesPath && orderId) {
       return await this.prisma.orderCreation.update({
         where: { id: businessId },
         data: {
           profOfDelivery: profOfDeliveryFilesPath.replace(/\\/g, '/'),
         },
       });
+      //profile upload
     } else {
       return await this.prisma.user.update({
         where: { uuid: uuid },
