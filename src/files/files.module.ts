@@ -14,18 +14,31 @@ import * as fs from 'fs';
       },
       storage: diskStorage({
         destination: (req, file, cb) => {
+          //upload businessLogo
           if (file.fieldname === 'businessLogo') {
             const path = `./uploads/user/business`;
             if (!fs.existsSync(path)) {
               fs.mkdirSync(path, { recursive: true });
             }
             return cb(null, path);
+            //upload businessTradeLicense
           } else if (file.fieldname === 'businessTradeLicense') {
             const path = `./uploads/user/documents`;
             if (!fs.existsSync(path)) {
               fs.mkdirSync(path, { recursive: true });
             }
             return cb(null, path);
+            //upload invoiceFiles and profof delivery files
+          } else if (
+            file.fieldname === 'invoiceFiles' ||
+            file.fieldname === 'profOfDeliveryFiles'
+          ) {
+            const path = `./uploads/user/files`;
+            if (!fs.existsSync(path)) {
+              fs.mkdirSync(path, { recursive: true });
+            }
+            return cb(null, path);
+            //upload nidImage and profileImage
           } else {
             // Dynamic folder selection
             const subFolder =
