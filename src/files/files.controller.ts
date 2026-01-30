@@ -130,7 +130,7 @@ export class FilesController {
     }
 
     // Prevent directory traversal
-    if (!dbPath.startsWith('uploads/seller/business/')) {
+    if (!dbPath.startsWith('uploads/user/business/')) {
       throw new ForbiddenException('Invalid file path');
     }
 
@@ -172,7 +172,7 @@ export class FilesController {
     }
 
     // Prevent directory traversal
-    if (!dbPath.startsWith('uploads/seller/documents/')) {
+    if (!dbPath.startsWith('uploads/user/documents/')) {
       throw new ForbiddenException('Invalid file path');
     }
 

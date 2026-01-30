@@ -15,13 +15,13 @@ import * as fs from 'fs';
       storage: diskStorage({
         destination: (req, file, cb) => {
           if (file.fieldname === 'businessLogo') {
-            const path = `./uploads/seller/business`;
+            const path = `./uploads/user/business`;
             if (!fs.existsSync(path)) {
               fs.mkdirSync(path, { recursive: true });
             }
             return cb(null, path);
           } else if (file.fieldname === 'businessTradeLicense') {
-            const path = `./uploads/seller/documents`;
+            const path = `./uploads/user/documents`;
             if (!fs.existsSync(path)) {
               fs.mkdirSync(path, { recursive: true });
             }
@@ -30,7 +30,7 @@ import * as fs from 'fs';
             // Dynamic folder selection
             const subFolder =
               file.fieldname === 'nidImage' ? 'documents' : 'profiles';
-            const path = `./uploads/seller/${subFolder}`;
+            const path = `./uploads/user/${subFolder}`;
 
             // Ensure directories exist
             if (!fs.existsSync(path)) {

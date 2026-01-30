@@ -63,6 +63,7 @@ export class OrderService {
         linkCreated: {
           select: {
             link: true,
+            expiry: true,
           },
         },
       },
@@ -70,6 +71,7 @@ export class OrderService {
     return orders.map((order) => ({
       ...order,
       link: order.linkCreated[0]?.link ?? null,
+      linkExpiry: order.linkCreated[0]?.expiry ?? null,
       linkCreated: undefined,
     }));
   }
