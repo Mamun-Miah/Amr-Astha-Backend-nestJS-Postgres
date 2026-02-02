@@ -17,7 +17,6 @@ export class CreateSellerReviewDto {
   @IsOptional()
   @IsString()
   complain?: string;
- 
   @IsString()
   orderUuid: string;
 }
