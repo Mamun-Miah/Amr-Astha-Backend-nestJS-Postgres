@@ -8,6 +8,7 @@ import express from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GetUser } from './decorators/get-user.decorator';
 import type { JwtUser } from './types/jwt-user.type';
+// import { VerifiedGuard } from './guards/verified.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -66,11 +67,9 @@ export class AuthController {
     return result;
   }
   @UseGuards(JwtAuthGuard)
+  // @UseGuards(VerifiedGuard)
   @Get('status')
   getStatus(@GetUser() user: JwtUser) {
-    return {
-      loggedIn: true,
-      user: user,
-    };
+    return this.authService.status(user);
   }
 }

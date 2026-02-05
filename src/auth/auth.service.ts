@@ -15,7 +15,7 @@ import { randomInt } from 'crypto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-
+import type { JwtUser } from './types/jwt-user.type';
 export const roundsOfHashing = 12;
 
 @Injectable()
@@ -212,6 +212,24 @@ export class AuthService {
         phone: user.phone,
         isEmailVerified: user.isEmailVerified,
       },
+    };
+  }
+  async status(user: JwtUser) {
+    const userId = user.id;
+    const userData = await this.prisma.businessInfo.findMany({
+      where: { userId: userId },
+      select: {
+        id: true,
+        businessName: true,
+        businessLogoUrl: true,
+      },
+    });
+
+    return {
+      success: true,
+      loggedIn: true,
+      user: user,
+      businessInfo: userData,
     };
   }
 }

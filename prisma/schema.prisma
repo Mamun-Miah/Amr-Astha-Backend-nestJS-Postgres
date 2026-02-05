@@ -29,7 +29,8 @@ model User {
 
   profileImageUrl String?
   nidImageUrl     String?
-
+  
+  isProfileVerified      Boolean @default(false)
   isEmailVerified Boolean @default(false)
   isPhoneVerified Boolean @default(false)
   isActive        Boolean @default(true)
