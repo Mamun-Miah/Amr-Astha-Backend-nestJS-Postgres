@@ -10,6 +10,18 @@ export class CustomerReviewService {
     dto: CreateSellerReviewDto,
     attachment?: Express.Multer.File,
   ) {
+    //find already reviewd order
+    const alreadyReviewed = await this.prisma.sellerReview.findFirst({
+      where: {
+        orderUuid: dto.orderUuid,
+      },
+    });
+    if (alreadyReviewed) {
+      return {
+        message: 'Already reviewed',
+        success: false,
+      };
+    }
     // ensure OrderCreationexist
     const order = await this.prisma.orderCreation.findUnique({
       where: {
@@ -26,6 +38,7 @@ export class CustomerReviewService {
     // ensure order exists
     return this.prisma.sellerReview.create({
       data: {
+        orderUuid: dto.orderUuid,
         review: dto.review,
         complain: dto.complain,
         orderId: order.id,

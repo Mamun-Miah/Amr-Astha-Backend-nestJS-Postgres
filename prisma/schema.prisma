@@ -132,6 +132,7 @@ model SellerReview {
   complain      String?
   createdAt     DateTime      @default(now())
   attachment    String?
+  orderUuid     String        @unique
   //relations
   orderId       Int
   orderCreation OrderCreation @relation(fields: [orderId], references: [id])
