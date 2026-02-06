@@ -40,7 +40,7 @@ model User {
 
   businessInfo  BusinessInfo[]
   linkCreations OrderCreation[]
-  sellerScores  SellerScore[]
+  // sellerScores  SellerScore[]
 }
 
 enum AuthProvider {
@@ -82,6 +82,9 @@ model BusinessInfo {
   //userID
   userId                 Int
   user                   User             @relation(fields: [userId], references: [id])
+  sellerScores           SellerScore[]
+  businessVerification   BusinessVerification[]
+
 }
 
 model OrderCreation {
@@ -89,7 +92,7 @@ model OrderCreation {
   uuid               String         @unique @default(uuid()) @db.Uuid
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
-  orderDate          DateTime
+  orderDate                    DateTime
   deliveryDate       DateTime
   productName        String
   productDescription String
@@ -118,7 +121,6 @@ model LinkCreated {
   //Relations
   orderId       Int
   orderCreation OrderCreation @relation(fields: [orderId], references: [id])
-  sellerScores  SellerScore[]
 }
 
 enum ReviewEnum {
@@ -135,8 +137,10 @@ model SellerReview {
   attachment    String?
   orderUuid     String        @unique
   //relations
-  orderId       Int
+  orderId       Int           @unique
   orderCreation OrderCreation @relation(fields: [orderId], references: [id])
+   sellerScoreId Int
+  sellerScore   SellerScore   @relation(fields: [sellerScoreId], references: [id])
   disputes      Disputes[]
 }
 
@@ -163,27 +167,33 @@ model Otp {
 enum PositionEnum {
   UNVERIFIED
   NEW
-  Building
+  BUILDING
   High
   VERIFIED_PRO
 }
 
 model SellerScore {
-  id                        Int          @id @default(autoincrement())
-  totalScore                Int
-  currentTotalScore         Int
-  currentPosition           PositionEnum @default(UNVERIFIED)
-  userVerificationScore     UserVerificationScore?
-  businessVerificationScore BusinessVerificationScore?
-  spamScore                 SpamScore?
-  customerReviewScore       CustomerReviewScore?
-  sellerBehaviourScore      SellerBehaviourScore?
-  createdAt                 DateTime     @default(now())
-  userId        Int
-  user          User         @relation(fields: [userId], references: [id])
-  linkCreatedId             Int
-  linkCreated               LinkCreated  @relation(fields: [linkCreatedId], references: [id])
+  id                Int          @id @default(autoincrement())
+
+  totalScore        Int
+  currentPosition   PositionEnum @default(UNVERIFIED)
+
+  customerReviewAvg Float        @default(0)
+  behaviourScore    Int          @default(0)
+  spamScore         Int          @default(0)
+  verificationScore Int          @default(0)
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  businessId        Int          @unique
+  business          BusinessInfo @relation(fields: [businessId], references: [id])
+
+  reviews           SellerReview[]
+  behaviourLogs     SellerBehaviourLog[]
+  spamLogs          SpamLog[]
 }
+
 
 model UserVerificationScore {
   id            Int        @id @default(autoincrement())
@@ -191,41 +201,57 @@ model UserVerificationScore {
   createdAt     DateTime   @default(now())
 
   sellerScoreId Int        @unique
+}
+
+model BusinessVerification {
+  id                 Int      @id @default(autoincrement())
+
+  tradeLicense       Boolean  @default(false)
+  nidVerified        Boolean  @default(false)
+  addressVerified    Boolean  @default(false)
+  warehouseVerified  Boolean  @default(false)
+
+  verificationScore  Int
+  verifiedAt         DateTime?
+
+  businessId         Int      @unique
+  business           BusinessInfo @relation(fields: [businessId], references: [id])
+}
+
+
+enum SpamType {
+  FAKE_REVIEW
+  MULTIPLE_ACCOUNTS
+  FRAUD_LINK
+  PAYMENT_SCAM
+}
+
+model SpamLog {
+  id            Int        @id @default(autoincrement())
+  type          SpamType
+  scoreImpact   Int        // negative
+  detectedBy    String?    // system / admin / AI
+  createdAt     DateTime   @default(now())
+
+  sellerScoreId Int
   sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
 }
 
-model BusinessVerificationScore {
-  id            Int        @id @default(autoincrement())
-  score         Int
-  createdAt     DateTime   @default(now())
-
-  sellerScoreId Int        @unique
-  sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
+enum BehaviourType {
+  LATE_DELIVERY
+  ORDER_CANCELLED
+  CUSTOMER_SUPPORT_GOOD
+  CUSTOMER_SUPPORT_BAD
+  POLICY_VIOLATION
 }
 
-model SpamScore {
-  id            Int        @id @default(autoincrement())
-  score         Int
-  createdAt     DateTime   @default(now())
+model SellerBehaviourLog {
+  id            Int            @id @default(autoincrement())
+  type          BehaviourType
+  scoreImpact   Int            // + or -
+  reason        String?
+  createdAt     DateTime       @default(now())
 
-  sellerScoreId Int        @unique
-  sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
-}
-
-model CustomerReviewScore {
-  id            Int        @id @default(autoincrement())
-  score         Int
-  createdAt     DateTime   @default(now())
-
-  sellerScoreId Int        @unique
-  sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
-}
-
-model SellerBehaviourScore {
-  id            Int        @id @default(autoincrement())
-  score         Int
-  createdAt     DateTime   @default(now())
-
-  sellerScoreId Int        @unique
-  sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
+  sellerScoreId Int
+  sellerScore   SellerScore    @relation(fields: [sellerScoreId], references: [id])
 }
