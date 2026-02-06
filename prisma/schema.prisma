@@ -29,17 +29,18 @@ model User {
 
   profileImageUrl String?
   nidImageUrl     String?
-  
-  isProfileVerified      Boolean @default(false)
-  isEmailVerified Boolean @default(false)
-  isPhoneVerified Boolean @default(false)
-  isActive        Boolean @default(true)
+
+  isProfileVerified Boolean @default(false)
+  isEmailVerified   Boolean @default(false)
+  isPhoneVerified   Boolean @default(false)
+  isActive          Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   businessInfo  BusinessInfo[]
   linkCreations OrderCreation[]
+  sellerScores  SellerScore[]
 }
 
 enum AuthProvider {
@@ -151,18 +152,80 @@ model Disputes {
   sellerReview   SellerReview @relation(fields: [sellerReviewId], references: [id])
 }
 
-model SellerScore {
-  id            Int         @id @default(autoincrement())
-  score         Int
-  createdAt     DateTime    @default(now())
-  linkCreatedId Int
-  linkCreated   LinkCreated @relation(fields: [linkCreatedId], references: [id])
-}
-
 model Otp {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+enum PositionEnum {
+  UNVERIFIED
+  NEW
+  Building
+  High
+  VERIFIED_PRO
+}
+
+model SellerScore {
+  id                        Int          @id @default(autoincrement())
+  totalScore                Int
+  currentTotalScore         Int
+  currentPosition           PositionEnum @default(UNVERIFIED)
+  userVerificationScore     UserVerificationScore?
+  businessVerificationScore BusinessVerificationScore?
+  spamScore                 SpamScore?
+  customerReviewScore       CustomerReviewScore?
+  sellerBehaviourScore      SellerBehaviourScore?
+  createdAt                 DateTime     @default(now())
+  userId        Int
+  user          User         @relation(fields: [userId], references: [id])
+  linkCreatedId             Int
+  linkCreated               LinkCreated  @relation(fields: [linkCreatedId], references: [id])
+}
+
+model UserVerificationScore {
+  id            Int        @id @default(autoincrement())
+  score         Int        @default(0)
+  createdAt     DateTime   @default(now())
+
+  sellerScoreId Int        @unique
+  sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
+}
+
+model BusinessVerificationScore {
+  id            Int        @id @default(autoincrement())
+  score         Int
+  createdAt     DateTime   @default(now())
+
+  sellerScoreId Int        @unique
+  sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
+}
+
+model SpamScore {
+  id            Int        @id @default(autoincrement())
+  score         Int
+  createdAt     DateTime   @default(now())
+
+  sellerScoreId Int        @unique
+  sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
+}
+
+model CustomerReviewScore {
+  id            Int        @id @default(autoincrement())
+  score         Int
+  createdAt     DateTime   @default(now())
+
+  sellerScoreId Int        @unique
+  sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
+}
+
+model SellerBehaviourScore {
+  id            Int        @id @default(autoincrement())
+  score         Int
+  createdAt     DateTime   @default(now())
+
+  sellerScoreId Int        @unique
+  sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
 }
