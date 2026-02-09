@@ -6,7 +6,20 @@ import { randomUUID } from 'crypto';
 export class OrderService {
   constructor(private prisma: PrismaService) {}
 
-  async createOrder(userId: number, orderData: CreateOrderDto, uuid: string) {
+  async createOrder(
+    userId: number,
+    businessId: number,
+    orderData: CreateOrderDto,
+    uuid: string,
+  ) {
+    console.log('sdddddddddddddddddddddddddddddddddddd', businessId);
+    const business = await this.prisma.businessInfo.findUnique({
+      where: { id: businessId },
+    });
+
+    if (!business) {
+      throw new Error(`Business with id ${businessId} not found`);
+    }
     //create order
     const order = await this.prisma.orderCreation.create({
       data: {
@@ -24,6 +37,7 @@ export class OrderService {
         invoiceNumber: orderData.invoiceNumber,
         invoiceUrl: orderData.invoiceUrl,
         profOfDelivery: orderData.profOfDelivery,
+        businessId: businessId,
       },
     });
     //Link expireation

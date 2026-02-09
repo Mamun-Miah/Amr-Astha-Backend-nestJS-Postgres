@@ -19,4 +19,6 @@ export class CreateSellerReviewDto {
   complain?: string;
   @IsString()
   orderUuid: string;
+  @IsNotEmpty()
+  businessId: number;
 }

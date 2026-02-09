@@ -49,6 +49,7 @@ export class CustomerReviewService {
         review: dto.review,
         score: setScore,
         complain: dto.complain,
+        businessId: dto.businessId,
         orderId: order.id,
         attachment: attachment ? attachment.path.replace(/\\/g, '/') : null,
       },

@@ -146,7 +146,7 @@ model SellerReview {
   orderId       Int           @unique
   orderCreation OrderCreation @relation(fields: [orderId], references: [id])
 
-  businessId Int          @unique
+  businessId Int          
   business   BusinessInfo @relation(fields: [businessId], references: [id])
 
   disputes Disputes[]

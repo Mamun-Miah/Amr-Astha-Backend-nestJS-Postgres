@@ -32,14 +32,4 @@ export class SetScoreService {
       score: 100,
     };
   }
-  async totalScoreCalculation(businessId: number) {
-    const sumTotalScore = await this.prisma.sellerScore.aggregate({
-      where: {
-        businessId: businessId,
-      },
-      _sum: {
-        score: true,
-      },
-  });
-  }
 }

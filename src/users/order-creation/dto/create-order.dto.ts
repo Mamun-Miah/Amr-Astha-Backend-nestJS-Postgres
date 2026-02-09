@@ -5,6 +5,7 @@ import {
   IsEmail,
   IsDateString,
   IsInt,
+  // IsNotEmpty,
 } from 'class-validator';
 
 export class CreateOrderDto {
@@ -47,6 +48,9 @@ export class CreateOrderDto {
 
   @IsString()
   profOfDelivery: string;
+  // @IsNumber()
+  // @IsNotEmpty()
+  // businessId: number;
 }
 export class CreateLinkDto {
   @IsString()
