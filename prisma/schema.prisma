@@ -62,29 +62,30 @@ enum BusinessTypeEnum {
 }
 
 model BusinessInfo {
-  id                     Int              @id @default(autoincrement())
+  id                     Int                    @id @default(autoincrement())
   businessName           String
   businessLogoUrl        String?
   businessType           BusinessTypeEnum
   businessAddress        String
   businessPhone          String?
-  businessEmail          String           @unique
+  businessEmail          String                 @unique
   businessWebsite        String?
   businessTradeLicense   String?
   businessWareHouse      String?
   businessStoreFrontLink String
   //Date
-  createdAt              DateTime         @default(now())
-  updatedAt              DateTime         @updatedAt
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
   //businessCategoryID
   businessCategoryId     Int
-  businessCategory       BusinessCategory @relation(fields: [businessCategoryId], references: [id])
+  businessCategory       BusinessCategory       @relation(fields: [businessCategoryId], references: [id])
   //userID
   userId                 Int
-  user                   User             @relation(fields: [userId], references: [id])
+  user                   User                   @relation(fields: [userId], references: [id])
   sellerScores           SellerScore[]
   businessVerification   BusinessVerification[]
-
+  sellerReviews          SellerReview[]
+  orderCreations         OrderCreation[]
 }
 
 model OrderCreation {
@@ -92,7 +93,7 @@ model OrderCreation {
   uuid               String         @unique @default(uuid()) @db.Uuid
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
-  orderDate                    DateTime
+  orderDate          DateTime
   deliveryDate       DateTime
   productName        String
   productDescription String
@@ -108,6 +109,10 @@ model OrderCreation {
   //relations
   userId             Int
   user               User           @relation(fields: [userId], references: [id])
+
+  businessId Int          
+  business   BusinessInfo @relation(fields: [businessId], references: [id])
+
   linkCreated        LinkCreated[]
   sellerReviews      SellerReview[]
 }
@@ -136,12 +141,15 @@ model SellerReview {
   createdAt     DateTime      @default(now())
   attachment    String?
   orderUuid     String        @unique
+  score         Int           @default(0)
   //relations
   orderId       Int           @unique
   orderCreation OrderCreation @relation(fields: [orderId], references: [id])
-   sellerScoreId Int
-  sellerScore   SellerScore   @relation(fields: [sellerScoreId], references: [id])
-  disputes      Disputes[]
+
+  businessId Int          @unique
+  business   BusinessInfo @relation(fields: [businessId], references: [id])
+
+  disputes Disputes[]
 }
 
 model Disputes {
@@ -172,52 +180,50 @@ enum PositionEnum {
   VERIFIED_PRO
 }
 
+//seller score model 
 model SellerScore {
-  id                Int          @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  totalScore        Int
-  currentPosition   PositionEnum @default(UNVERIFIED)
+  totalScore      Int
+  currentPosition PositionEnum @default(UNVERIFIED)
 
-  customerReviewAvg Float        @default(0)
-  behaviourScore    Int          @default(0)
-  spamScore         Int          @default(0)
-  verificationScore Int          @default(0)
+  customerReviewAvg Float @default(0)
+  behaviourScore    Int   @default(0)
+  spamScore         Int   @default(0)
+  verificationScore Int   @default(0)
 
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  businessId        Int          @unique
-  business          BusinessInfo @relation(fields: [businessId], references: [id])
+  businessId Int          @unique
+  business   BusinessInfo @relation(fields: [businessId], references: [id])
 
-  reviews           SellerReview[]
-  behaviourLogs     SellerBehaviourLog[]
-  spamLogs          SpamLog[]
+  behaviourLogs SellerBehaviourLog[]
+  spamLogs      SpamLog[]
 }
 
-
 model UserVerificationScore {
-  id            Int        @id @default(autoincrement())
-  score         Int        @default(0)
-  createdAt     DateTime   @default(now())
+  id        Int      @id @default(autoincrement())
+  score     Int      @default(0)
+  createdAt DateTime @default(now())
 
-  sellerScoreId Int        @unique
+  sellerScoreId Int @unique
 }
 
 model BusinessVerification {
-  id                 Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  tradeLicense       Boolean  @default(false)
-  nidVerified        Boolean  @default(false)
-  addressVerified    Boolean  @default(false)
-  warehouseVerified  Boolean  @default(false)
+  tradeLicense      Boolean @default(false)
+  nidVerified       Boolean @default(false)
+  addressVerified   Boolean @default(false)
+  warehouseVerified Boolean @default(false)
 
-  verificationScore  Int
-  verifiedAt         DateTime?
+  verificationScore Int
+  verifiedAt        DateTime?
 
-  businessId         Int      @unique
-  business           BusinessInfo @relation(fields: [businessId], references: [id])
+  businessId Int          @unique
+  business   BusinessInfo @relation(fields: [businessId], references: [id])
 }
-
 
 enum SpamType {
   FAKE_REVIEW
@@ -227,11 +233,11 @@ enum SpamType {
 }
 
 model SpamLog {
-  id            Int        @id @default(autoincrement())
-  type          SpamType
-  scoreImpact   Int        // negative
-  detectedBy    String?    // system / admin / AI
-  createdAt     DateTime   @default(now())
+  id          Int      @id @default(autoincrement())
+  type        SpamType
+  scoreImpact Int // negative
+  detectedBy  String? // system / admin / AI
+  createdAt   DateTime @default(now())
 
   sellerScoreId Int
   sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
@@ -246,12 +252,12 @@ enum BehaviourType {
 }
 
 model SellerBehaviourLog {
-  id            Int            @id @default(autoincrement())
-  type          BehaviourType
-  scoreImpact   Int            // + or -
-  reason        String?
-  createdAt     DateTime       @default(now())
+  id          Int           @id @default(autoincrement())
+  type        BehaviourType
+  scoreImpact Int // + or -
+  reason      String?
+  createdAt   DateTime      @default(now())
 
   sellerScoreId Int
-  sellerScore   SellerScore    @relation(fields: [sellerScoreId], references: [id])
+  sellerScore   SellerScore @relation(fields: [sellerScoreId], references: [id])
 }
