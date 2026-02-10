@@ -12,7 +12,6 @@ export class OrderService {
     orderData: CreateOrderDto,
     uuid: string,
   ) {
-    console.log('sdddddddddddddddddddddddddddddddddddd', businessId);
     const business = await this.prisma.businessInfo.findUnique({
       where: { id: businessId },
     });

@@ -40,6 +40,7 @@ model User {
 
   businessInfo  BusinessInfo[]
   linkCreations OrderCreation[]
+  sellerScores  SellerScore[]
   // sellerScores  SellerScore[]
 }
 
@@ -82,17 +83,16 @@ model BusinessInfo {
   //userID
   userId                 Int
   user                   User                   @relation(fields: [userId], references: [id])
-  sellerScores           SellerScore[]
   businessVerification   BusinessVerification[]
   sellerReviews          SellerReview[]
   orderCreations         OrderCreation[]
 }
 
 model OrderCreation {
-  id                 Int            @id @default(autoincrement())
-  uuid               String         @unique @default(uuid()) @db.Uuid
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  id                 Int      @id @default(autoincrement())
+  uuid               String   @unique @default(uuid()) @db.Uuid
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
   orderDate          DateTime
   deliveryDate       DateTime
   productName        String
@@ -103,18 +103,18 @@ model OrderCreation {
   customerEmail      String?
   customerPhone      String
   customerAddress    String
-  invoiceNumber      String         @unique
+  invoiceNumber      String   @unique
   invoiceUrl         String
   profOfDelivery     String
   //relations
   userId             Int
-  user               User           @relation(fields: [userId], references: [id])
+  user               User     @relation(fields: [userId], references: [id])
 
-  businessId Int          
+  businessId Int
   business   BusinessInfo @relation(fields: [businessId], references: [id])
 
-  linkCreated        LinkCreated[]
-  sellerReviews      SellerReview[]
+  linkCreated   LinkCreated[]
+  sellerReviews SellerReview[]
 }
 
 model LinkCreated {
@@ -146,7 +146,7 @@ model SellerReview {
   orderId       Int           @unique
   orderCreation OrderCreation @relation(fields: [orderId], references: [id])
 
-  businessId Int          
+  businessId Int
   business   BusinessInfo @relation(fields: [businessId], references: [id])
 
   disputes Disputes[]
@@ -195,8 +195,8 @@ model SellerScore {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  businessId Int          @unique
-  business   BusinessInfo @relation(fields: [businessId], references: [id])
+  userId Int  @unique
+  user   User @relation(fields: [id], references: [id])
 
   behaviourLogs SellerBehaviourLog[]
   spamLogs      SpamLog[]
