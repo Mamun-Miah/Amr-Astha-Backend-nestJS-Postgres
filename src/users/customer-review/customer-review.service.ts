@@ -83,12 +83,12 @@ export class CustomerReviewService {
     if (!order) {
       throw new Error('Order not found');
     }
-    const { id, ...restOrder } = order;
+    const { id: orderId, ...restOrder } = order;
 
     ///link details
     const linkDetails = await this.prisma.linkCreated.findFirst({
       where: {
-        orderId: id,
+        orderId: orderId,
       },
       select: {
         createdAt: true,
