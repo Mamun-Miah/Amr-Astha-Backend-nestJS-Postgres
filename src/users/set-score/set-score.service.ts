@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-export const ORDER_CREATION_TOTAL_MARKS = 1 as const;
+// export const ORDER_CREATION_TOTAL_MARKS = 1 as const;
 
 @Injectable()
 export class SetScoreService {
