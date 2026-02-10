@@ -23,11 +23,6 @@ export class SetScoreService {
       return {
         score: 80,
       };
-    if (!checkEvidence.invoiceUrl || !checkEvidence.profOfDelivery) {
-      return {
-        score: 90,
-      };
-    }
     return {
       score: 100,
     };

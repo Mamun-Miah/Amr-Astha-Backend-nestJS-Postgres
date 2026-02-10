@@ -1,4 +1,10 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export enum ReviewEnum {
   COMPLETED_AS_AGREED = 'COMPLETED_AS_AGREED',
@@ -18,7 +24,6 @@ export class CreateSellerReviewDto {
   @IsString()
   complain?: string;
   @IsString()
+  @IsUUID()
   orderUuid: string;
-  @IsNotEmpty()
-  businessId: number;
 }

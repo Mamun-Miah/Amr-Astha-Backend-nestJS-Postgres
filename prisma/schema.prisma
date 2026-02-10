@@ -84,7 +84,6 @@ model BusinessInfo {
   userId                 Int
   user                   User                   @relation(fields: [userId], references: [id])
   businessVerification   BusinessVerification[]
-  sellerReviews          SellerReview[]
   orderCreations         OrderCreation[]
 }
 
@@ -145,9 +144,6 @@ model SellerReview {
   //relations
   orderId       Int           @unique
   orderCreation OrderCreation @relation(fields: [orderId], references: [id])
-
-  businessId Int
-  business   BusinessInfo @relation(fields: [businessId], references: [id])
 
   disputes Disputes[]
 }

@@ -35,10 +35,12 @@ export class CustomerReviewService {
         id: true,
       },
     });
+
     if (!order) {
       throw new Error('Order not found');
     }
     const getScore = await this.setScoreService.setEvidenceScore(order.id);
+    //without COMPLETED_AS_AGREED user got 0 Marks until resolved
     const setScore =
       dto.review === ReviewEnum.COMPLETED_AS_AGREED ? getScore.score : 0;
 
@@ -49,7 +51,6 @@ export class CustomerReviewService {
         review: dto.review,
         score: setScore,
         complain: dto.complain,
-        businessId: dto.businessId,
         orderId: order.id,
         attachment: attachment ? attachment.path.replace(/\\/g, '/') : null,
       },
