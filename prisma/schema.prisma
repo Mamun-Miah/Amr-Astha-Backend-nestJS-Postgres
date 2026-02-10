@@ -180,7 +180,7 @@ enum PositionEnum {
 model SellerScore {
   id Int @id @default(autoincrement())
 
-  totalScore      Int
+  totalScore      Int @default(0)
   currentPosition PositionEnum @default(UNVERIFIED)
 
   customerReviewAvg Float @default(0)
