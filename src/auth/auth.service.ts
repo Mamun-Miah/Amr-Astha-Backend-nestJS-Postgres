@@ -199,6 +199,16 @@ export class AuthService {
         'Login successful but email not verified',
       );
     }
+    const businessInfo = await this.prisma.businessInfo.findMany({
+      where: { userId: user.id },
+      select:{
+        id: true,
+        businessName: true,
+        businessLogoUrl: true,
+        businessEmail: true,
+        businessPhone: true,
+      },
+    });
 
     return {
       accessToken,
@@ -212,6 +222,7 @@ export class AuthService {
         phone: user.phone,
         isEmailVerified: user.isEmailVerified,
       },
+      businessInfo: businessInfo,
     };
   }
   async status(user: JwtUser) {

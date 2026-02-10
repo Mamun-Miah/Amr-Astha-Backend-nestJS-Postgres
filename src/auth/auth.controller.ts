@@ -23,7 +23,8 @@ export class AuthController {
     @Body() dto: LoginUserDto,
     @Res({ passthrough: true }) response: express.Response,
   ) {
-    const { accessToken, user } = await this.authService.signin(dto);
+    const { accessToken, user, message, businessInfo } =
+      await this.authService.signin(dto);
 
     response.cookie('Authentication', accessToken, {
       httpOnly: true,
@@ -36,7 +37,7 @@ export class AuthController {
       path: '/',
     });
 
-    return { success: true, user };
+    return { success: true, message, user, businessInfo };
   }
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 100, ttl: 60000 } })
