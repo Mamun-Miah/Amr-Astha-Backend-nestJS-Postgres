@@ -141,6 +141,7 @@ model SellerReview {
   attachment    String?
   orderUuid     String        @unique
   score         Int           @default(0)
+  isReviewed      Boolean      @default(false)
   //relations
   orderId       Int           @unique
   orderCreation OrderCreation @relation(fields: [orderId], references: [id])

@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSellerReviewDto } from './dto/create-seller-review.dto';
 import { SetScoreService } from '../set-score/set-score.service';
 import { ReviewEnum } from './dto/create-seller-review.dto';
+
 @Injectable()
 export class CustomerReviewService {
   constructor(
@@ -51,9 +52,69 @@ export class CustomerReviewService {
         review: dto.review,
         score: setScore,
         complain: dto.complain,
+        isReviewed: true,
         orderId: order.id,
         attachment: attachment ? attachment.path.replace(/\\/g, '/') : null,
       },
     });
+  }
+  async getLinkDetails(orderUuid: string) {
+    if (!orderUuid) {
+      throw new NotFoundException('orderUuid required');
+    }
+    //get orderdetails
+    const order = await this.prisma.orderCreation.findUnique({
+      where: {
+        uuid: orderUuid,
+      },
+      select: {
+        id: true,
+        invoiceNumber: true,
+        createdAt: true,
+        updatedAt: true,
+        orderDate: true,
+        deliveryDate: true,
+        productName: true,
+        productDescription: true,
+        productPrice: true,
+        productQuantity: true,
+      },
+    });
+    if (!order) {
+      throw new Error('Order not found');
+    }
+    const { id, ...restOrder } = order;
+
+    ///link details
+    const linkDetails = await this.prisma.linkCreated.findFirst({
+      where: {
+        orderId: id,
+      },
+      select: {
+        createdAt: true,
+        expiry: true,
+        link: true,
+      },
+    });
+    if (!linkDetails) {
+      throw new Error('Link not found');
+    }
+    const todayDate = new Date();
+    const checkExpiredLink = linkDetails.expiry < todayDate ? true : false;
+    //isreviewd or not
+    const isAlreadyReviewed = await this.prisma.sellerReview.findFirst({
+      where: {
+        orderUuid: orderUuid,
+      },
+      select: {
+        isReviewed: true,
+      },
+    });
+
+    return {
+      orderDetails: restOrder,
+      expiredLink: checkExpiredLink,
+      isAlreadyReviewed: isAlreadyReviewed?.isReviewed ? true : false,
+    };
   }
 }

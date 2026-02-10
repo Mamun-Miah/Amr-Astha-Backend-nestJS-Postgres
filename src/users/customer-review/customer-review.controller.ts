@@ -2,8 +2,10 @@ import {
   Controller,
   Post,
   Body,
+  Get,
   UploadedFile,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -33,5 +35,9 @@ export class CustomerReviewController {
     @UploadedFile() attachment?: Express.Multer.File,
   ) {
     return this.customerReviewService.createReview(dto, attachment);
+  }
+  @Get()
+  async getLinkDetails(@Query('orderUuid') orderUuid: string) {
+    return this.customerReviewService.getLinkDetails(orderUuid);
   }
 }
