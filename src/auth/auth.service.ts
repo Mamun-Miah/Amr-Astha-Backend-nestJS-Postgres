@@ -201,7 +201,7 @@ export class AuthService {
     }
     const businessInfo = await this.prisma.businessInfo.findMany({
       where: { userId: user.id },
-      select:{
+      select: {
         id: true,
         businessName: true,
         businessLogoUrl: true,
@@ -219,7 +219,6 @@ export class AuthService {
         uuid: user.uuid,
         name: user.name,
         email: user.email,
-        phone: user.phone,
         isEmailVerified: user.isEmailVerified,
       },
       businessInfo: businessInfo,
