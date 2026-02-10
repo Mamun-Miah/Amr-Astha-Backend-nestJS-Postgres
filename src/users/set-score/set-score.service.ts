@@ -5,19 +5,29 @@ export const ORDER_CREATION_TOTAL_MARKS = 1 as const;
 @Injectable()
 export class SetScoreService {
   constructor(private prisma: PrismaService) {}
+  private async incrementSellerScore(userId: number, score: number) {
+    return this.prisma.sellerScore.upsert({
+      where: { userId: userId },
+      create: { userId: userId, totalScore: score },
+      update: {
+        totalScore: {
+          increment: score,
+        },
+      },
+    });
+  }
   async setEvidenceScore(orderId: number) {
     //if no evidence provided
     //check evidence has or not
     if (!orderId) {
-      throw new Error('OrderId not found');
+      throw new Error('OrderId must need');
     }
     const checkEvidence = await this.prisma.orderCreation.findFirst({
       where: {
         id: orderId,
       },
       select: {
-        // id: true,
-        // uuid: true,
+        userId: true,
         invoiceUrl: true,
         profOfDelivery: true,
       },
@@ -25,42 +35,15 @@ export class SetScoreService {
     if (!checkEvidence) {
       throw new Error('Order not found');
     }
-    const score =
+    //set score
+    const gotScore =
       checkEvidence.invoiceUrl || checkEvidence.profOfDelivery ? 100 : 80;
-    ////////////////////////////////////
-    //save score to the main score board
-    //find user id
-    ////////////////////////////////////
-    const userId = await this.prisma.orderCreation.findFirst({
-      where: {
-        id: orderId,
-      },
-      select: {
-        userId: true,
-      },
-    });
-    if (!userId) {
-      throw new Error('User not found');
-    }
-    //save score to seller score
-    await this.prisma.sellerScore.upsert({
-      where: {
-        userId: userId.userId,
-      },
-      create: {
-        userId: userId.userId,
-        // totalScore omitted → default 0
-      },
-      update: {
-        totalScore: {
-          increment: score,
-        },
-      },
-    });
-    ////////////////////////////////////
+    //increment seller score
+    await this.incrementSellerScore(checkEvidence.userId, gotScore);
+
     //return score to customer service
     return {
-      score,
+      gotScore,
     };
   }
 }

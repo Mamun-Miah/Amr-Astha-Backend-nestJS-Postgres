@@ -192,7 +192,7 @@ model SellerScore {
   updatedAt DateTime @updatedAt
 
   userId Int  @unique
-  user   User @relation(fields: [id], references: [id])
+  user   User @relation(fields: [userId], references: [id])
 
   behaviourLogs SellerBehaviourLog[]
   spamLogs      SpamLog[]

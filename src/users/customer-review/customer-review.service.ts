@@ -42,7 +42,7 @@ export class CustomerReviewService {
     const getScore = await this.setScoreService.setEvidenceScore(order.id);
     //without COMPLETED_AS_AGREED user got 0 Marks until resolved
     const setScore =
-      dto.review === ReviewEnum.COMPLETED_AS_AGREED ? getScore.score : 0;
+      dto.review === ReviewEnum.COMPLETED_AS_AGREED ? getScore.gotScore : 0;
 
     // ensure order exists
     return this.prisma.sellerReview.create({
