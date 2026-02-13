@@ -5,10 +5,21 @@ import { Logger } from 'nestjs-pino';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { GlobalExceptionFilter } from './exceptions/prisma-exception.filter';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
+
+  //swagger api documentation
+  const config = new DocumentBuilder()
+    .setTitle('AmrAstha example')
+    .setDescription('The AmrAstha API description')
+    .setVersion('1.0')
+    .addTag('AmrAstha')
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, documentFactory);
   // --- Security ---
   app.use(helmet());
   app.use(cookieParser());
