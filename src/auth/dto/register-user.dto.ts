@@ -5,16 +5,29 @@ import {
   MinLength,
   Matches,
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterUserDto {
+  @ApiProperty({
+    example: 'John Doe',
+    description: 'User name',
+  })
   @IsString()
   @IsNotEmpty()
   name: string;
 
+  @ApiProperty({
+    example: 'user@gmail.com',
+    description: 'User email address',
+  })
   @IsEmail()
   @IsNotEmpty()
   email: string;
 
+  @ApiProperty({
+    example: '1234567890',
+    description: 'User phone number',
+  })
   @IsString()
   @IsNotEmpty()
   @Matches(/^\+?[0-9]{10,15}$/, {
@@ -22,6 +35,11 @@ export class RegisterUserDto {
   })
   phone: string;
 
+  @ApiProperty({
+    example: '123456',
+    description: 'User password (minimum 6 characters)',
+    minLength: 6,
+  })
   @IsString()
   @IsNotEmpty()
   @MinLength(6)
