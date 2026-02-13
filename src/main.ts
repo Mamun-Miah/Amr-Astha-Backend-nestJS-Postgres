@@ -16,13 +16,14 @@ async function bootstrap() {
     .setTitle('AmrAstha API example')
     .setDescription('The AmrAstha API documentation')
     .setVersion('1.0')
+    .addCookieAuth('Authorization')
     // .addTag('api')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  if (process.env.NODE_ENV !== 'development') {
-    SwaggerModule.setup('docs', app, documentFactory);
-  }
-
+  // if (process.env.NODE_ENV !== 'production') {
+  //   SwaggerModule.setup('docs', app, documentFactory);
+  // }
+  SwaggerModule.setup('docs', app, documentFactory);
   // --- Security ---
   app.use(helmet());
   app.use(cookieParser());
