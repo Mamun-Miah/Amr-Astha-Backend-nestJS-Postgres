@@ -12,12 +12,17 @@ import { OrderService } from './order.service';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import type { JwtUser } from 'src/auth/types/jwt-user.type';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+@ApiTags('Order Creation')
 @UseGuards(AuthGuard('jwt'))
 @Controller('user/orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post('create')
+  @ApiOperation({ summary: 'Create a new order' })
+  @ApiResponse({ status: 201, description: 'Order created successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   createOrder(
     @GetUser() user: JwtUser,
     @Query('businessId', ParseIntPipe) businessId: number,
@@ -30,7 +35,11 @@ export class OrderController {
       user.uuid,
     );
   }
+
   @Get()
+  @ApiOperation({ summary: 'Get all orders for a user' })
+  @ApiResponse({ status: 200, description: 'Orders retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Orders not found' })
   getOrders(@GetUser() user: JwtUser) {
     return this.orderService.getOrders(user.id);
   }

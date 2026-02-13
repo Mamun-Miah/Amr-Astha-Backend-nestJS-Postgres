@@ -10,15 +10,18 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CustomerReviewService } from './customer-review.service';
 import { CreateSellerReviewDto } from './dto/create-seller-review.dto';
-
+@ApiTags('Customer Review')
 @Controller('customer-review')
 export class CustomerReviewController {
   constructor(private readonly customerReviewService: CustomerReviewService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a review for a seller' })
+  @ApiResponse({ status: 201, description: 'Review created successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   @UseInterceptors(
     FileInterceptor('attachment', {
       storage: diskStorage({
@@ -36,7 +39,14 @@ export class CustomerReviewController {
   ) {
     return this.customerReviewService.createReview(dto, attachment);
   }
+
   @Get()
+  @ApiOperation({ summary: 'Get review link details for an order' })
+  @ApiResponse({
+    status: 200,
+    description: 'Link details retrieved successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   async getLinkDetails(@Query('orderUuid') orderUuid: string) {
     return this.customerReviewService.getLinkDetails(orderUuid);
   }

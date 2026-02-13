@@ -13,10 +13,10 @@ async function bootstrap() {
 
   //swagger api documentation
   const config = new DocumentBuilder()
-    .setTitle('AmrAstha example')
-    .setDescription('The AmrAstha API description')
+    .setTitle('AmrAstha API example')
+    .setDescription('The AmrAstha API documentation')
     .setVersion('1.0')
-    .addTag('AmrAstha')
+    // .addTag('api')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   if (process.env.NODE_ENV !== 'production') {

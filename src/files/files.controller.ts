@@ -14,6 +14,7 @@ import {
   Res,
   ParseIntPipe,
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
@@ -28,12 +29,19 @@ interface RequestWithUser extends Request {
     email: string;
   };
 }
+@ApiTags('File upload')
 @UseGuards(JwtAuthGuard)
 @Controller('user')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
-  @Post('upload-assets')
+  @Post('upload-assets') //upload files
+  @ApiOperation({
+    summary:
+      'Upload files example: profileImage, nidImage, businessLogo, businessTradeLicense, invoiceFiles, profOfDeliveryFiles',
+  })
+  @ApiResponse({ status: 200, description: 'Files uploaded successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'profileImage', maxCount: 1 },
@@ -91,6 +99,10 @@ export class FilesController {
   //getFilesProfiles and nid
   //
   @Get('view-file') //profile image and nid card
+  @ApiOperation({ summary: 'Get a private file' })
+  @ApiResponse({ status: 200, description: 'File retrieved successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'File not found' })
   async getPrivateFile(
     @Query('path') dbPath: string,
     @Req() req: RequestWithUser,
@@ -131,6 +143,10 @@ export class FilesController {
   //getBusinessLogo
   //
   @Get('view-business-logo')
+  @ApiOperation({ summary: 'Get a business logo' })
+  @ApiResponse({ status: 200, description: 'File retrieved successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'File not found' })
   async getBusinessLogo(
     @Query('businessId', ParseIntPipe) businessId: number,
     @Query('path') dbPath: string,
@@ -176,6 +192,9 @@ export class FilesController {
   //getBusinessLicense
   //
   @Get('view-business-license')
+  @ApiOperation({ summary: 'Get a business license' })
+  @ApiResponse({ status: 200, description: 'File retrieved successfully' })
+  @ApiResponse({ status: 400, description: 'error' })
   async getBusinessLicense(
     @Query('businessId', ParseIntPipe) businessId: number,
     @Query('path') dbPath: string,

@@ -10,12 +10,12 @@ import { GetUser } from './decorators/get-user.decorator';
 import type { JwtUser } from './types/jwt-user.type';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 // import { VerifiedGuard } from './guards/verified.guard';
-@ApiTags('auth')
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
+  @Post('register') //register api
   @ApiOperation({ summary: 'Register a new user' })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -23,7 +23,7 @@ export class AuthController {
     return this.authService.signup(dto);
   }
 
-  @Post('login')
+  @Post('login') //login api
   @ApiOperation({ summary: 'Login a user' })
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -47,13 +47,21 @@ export class AuthController {
 
     return { success: true, message, user, businessInfo };
   }
+
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 100, ttl: 60000 } })
-  @Post('request-otp')
+  @Post('request-otp') //otp request api
+  @ApiOperation({ summary: 'Request OTP for email verification' })
+  @ApiResponse({ status: 200, description: 'OTP sent successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   async requestOtp(@Body() dto: RequestOtpDto) {
     return this.authService.sendOtp(dto.uuid);
   }
-  @Post('verify-otp')
+
+  @Post('verify-otp') //verify otp
+  @ApiOperation({ summary: 'Verify OTP for email verification' })
+  @ApiResponse({ status: 200, description: 'OTP verified successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   async verifyOtp(
     @Body() dto: VerifyOtpDto,
     @Res({ passthrough: true }) response: express.Response,
@@ -77,7 +85,13 @@ export class AuthController {
   }
   @UseGuards(JwtAuthGuard)
   // @UseGuards(VerifiedGuard)
-  @Get('status')
+  @Get('status') // status api
+  @ApiOperation({ summary: 'Get user status' })
+  @ApiResponse({
+    status: 200,
+    description: 'User status retrieved successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   getStatus(@GetUser() user: JwtUser) {
     return this.authService.status(user);
   }
