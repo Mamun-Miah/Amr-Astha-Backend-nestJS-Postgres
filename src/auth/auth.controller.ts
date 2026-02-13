@@ -8,17 +8,25 @@ import express from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GetUser } from './decorators/get-user.decorator';
 import type { JwtUser } from './types/jwt-user.type';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 // import { VerifiedGuard } from './guards/verified.guard';
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiResponse({ status: 201, description: 'User registered successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
   signup(@Body() dto: RegisterUserDto) {
     return this.authService.signup(dto);
   }
 
   @Post('login')
+  @ApiOperation({ summary: 'Login a user' })
+  @ApiResponse({ status: 200, description: 'Login successful' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async signin(
     @Body() dto: LoginUserDto,
     @Res({ passthrough: true }) response: express.Response,

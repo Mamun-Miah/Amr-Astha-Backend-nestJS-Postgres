@@ -19,7 +19,10 @@ async function bootstrap() {
     .addTag('AmrAstha')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory);
+  if (process.env.NODE_ENV !== 'production') {
+    SwaggerModule.setup('docs', app, documentFactory);
+  }
+
   // --- Security ---
   app.use(helmet());
   app.use(cookieParser());
