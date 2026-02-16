@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { GlobalExceptionFilter } from './exceptions/prisma-exception.filter';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import compression from 'compression';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
@@ -13,7 +14,7 @@ async function bootstrap() {
 
   //swagger api documentation
   const config = new DocumentBuilder()
-    .setTitle('AmrAstha API example')
+    .setTitle('AmrAstha API Documentation')
     .setDescription('The AmrAstha API documentation')
     .setVersion('1.0')
     .addCookieAuth('Authorization')
@@ -24,6 +25,9 @@ async function bootstrap() {
   //   SwaggerModule.setup('docs', app, documentFactory);
   // }
   SwaggerModule.setup('docs', app, documentFactory);
+
+  // compression
+  app.use(compression());
   // --- Security ---
   app.use(helmet());
   app.use(cookieParser());

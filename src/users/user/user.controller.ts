@@ -5,13 +5,24 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import type { JwtUser } from 'src/auth/types/jwt-user.type';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-
+/**
+ *
+ *
+ * @export
+ * @class UserController
+ */
 @ApiTags('User Profile')
 @UseGuards(JwtAuthGuard)
 @Controller('user/my-profile')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  /**
+   * @param {JwtUser} user
+   * @param {UpdateSellerProfileDto} dto
+   * @return {*}
+   * @memberof UserController
+   */
   @Patch()
   @ApiOperation({ summary: 'Update seller profile' })
   @ApiResponse({
@@ -26,6 +37,11 @@ export class UserController {
     return this.userService.updateSellerProfile(user.uuid, dto);
   }
 
+  /**
+   * @param {JwtUser} user
+   * @return {*}
+   * @memberof UserController
+   */
   @Get()
   @ApiOperation({ summary: 'Get seller profile' })
   @ApiResponse({
