@@ -95,4 +95,13 @@ export class AuthController {
   getStatus(@GetUser() user: JwtUser) {
     return this.authService.status(user);
   }
+  @UseGuards(JwtAuthGuard)
+  @Post('auth/logout')
+  @ApiOperation({ summary: 'Logout a user' })
+  @ApiResponse({ status: 200, description: 'Logout successful' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  logout(@Res({ passthrough: true }) response: express.Response) {
+    response.clearCookie('Authentication');
+    return { success: true, message: 'Logged out successfully' };
+  }
 }

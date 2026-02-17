@@ -10,11 +10,17 @@ export class CreateDisputeDto {
   @IsNotEmpty()
   issue: string;
 
-  @ApiProperty({ description: 'Additional details about the dispute' })
+  @ApiProperty({
+    description: 'Additional details about the dispute',
+    required: false,
+  })
   @IsOptional()
   description: string;
 
-  @ApiProperty({ description: 'File attachment for the dispute (optional)' })
+  @ApiProperty({
+    description: 'File attachment for the dispute (optional)',
+    required: false,
+  })
   @IsOptional()
   disputeFile?: Express.Multer.File;
 }
