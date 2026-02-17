@@ -4,11 +4,19 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RequestOtpDto, VerifyOtpDto } from './dto/otp.dto';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
-import express from 'express';
+import express, { CookieOptions } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GetUser } from './decorators/get-user.decorator';
 import type { JwtUser } from './types/jwt-user.type';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+
+export const AUTH_COOKIE_OPTIONS: CookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'none',
+  partitioned: true,
+  path: '/',
+};
 // import { VerifiedGuard } from './guards/verified.guard';
 @ApiTags('Auth')
 @Controller('auth')
@@ -35,14 +43,8 @@ export class AuthController {
       await this.authService.signin(dto);
 
     response.cookie('Authentication', accessToken, {
-      httpOnly: true,
-      // secure: process.env.NODE_ENV === 'production',
-      secure: true,
-      // sameSite: 'lax',
-      sameSite: 'none',
-      partitioned: true,
+      ...AUTH_COOKIE_OPTIONS,
       maxAge: 3600000, // 1 hour
-      path: '/',
     });
 
     return { success: true, message, user, businessInfo };
@@ -70,14 +72,8 @@ export class AuthController {
 
     if (result.accessToken) {
       response.cookie('Authentication', result.accessToken, {
-        httpOnly: true,
-        // secure: process.env.NODE_ENV === 'production',
-        secure: true,
-        // sameSite: 'lax',
-        partitioned: true,
-        sameSite: 'none',
+        ...AUTH_COOKIE_OPTIONS,
         maxAge: 3600000,
-        path: '/',
       });
     }
 
@@ -102,11 +98,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   logout(@Res({ passthrough: true }) response: express.Response) {
     response.clearCookie('Authentication', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      partitioned: true,
-      path: '/',
+      ...AUTH_COOKIE_OPTIONS,
     });
     return { success: true, message: 'Logout successful' };
   }
