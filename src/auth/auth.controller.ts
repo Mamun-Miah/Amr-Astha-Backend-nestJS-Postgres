@@ -101,7 +101,13 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Logout successful' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   logout(@Res({ passthrough: true }) response: express.Response) {
-    response.clearCookie('Authentication');
-    return { success: true, message: 'Logged out successfully' };
+    response.clearCookie('Authentication', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      partitioned: true,
+      path: '/',
+    });
+    return { success: true, message: 'Logout successful' };
   }
 }
