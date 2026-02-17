@@ -15,6 +15,7 @@ import { OrderModule } from './users/order-creation/order.module';
 import { BusinessModule } from './users/business-profile/business.module';
 import { CustomerReviewModule } from './users/customer-review/customer-review.module';
 import { SetScoreModule } from './users/set-score/set-score.module';
+import { DisputeModule } from './users/dispute/dispute.module';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -64,6 +65,7 @@ import { SetScoreModule } from './users/set-score/set-score.module';
     OrderModule,
     CustomerReviewModule,
     SetScoreModule,
+    DisputeModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
