@@ -96,7 +96,7 @@ export class AuthController {
     return this.authService.status(user);
   }
   @UseGuards(JwtAuthGuard)
-  @Post('auth/logout')
+  @Post('logout')
   @ApiOperation({ summary: 'Logout a user' })
   @ApiResponse({ status: 200, description: 'Logout successful' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
