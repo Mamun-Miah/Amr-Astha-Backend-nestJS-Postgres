@@ -10,7 +10,7 @@ import { GetUser } from './decorators/get-user.decorator';
 import type { JwtUser } from './types/jwt-user.type';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-export const AUTH_COOKIE_OPTIONS: CookieOptions = {
+const AUTH_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: true,
   sameSite: 'none',
