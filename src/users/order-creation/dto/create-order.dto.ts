@@ -5,6 +5,7 @@ import {
   IsEmail,
   IsDateString,
   IsInt,
+  IsUUID,
   // IsNotEmpty,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -80,4 +81,9 @@ export class CreateLinkDto {
   @ApiProperty({ description: 'ID of the order associated with the link' })
   @IsInt()
   orderId: number;
+}
+export class GetOrderDetailsDto {
+  @ApiProperty({ description: 'UUID of the order' })
+  @IsUUID()
+  uuid: string;
 }

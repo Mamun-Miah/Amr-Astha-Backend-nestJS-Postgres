@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { GetOrderDetailsDto } from './dto/create-order.dto';
 import { OrderService } from './order.service';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
@@ -54,7 +55,7 @@ export class OrderController {
     description: 'Order details retrieved successfully',
   })
   @ApiResponse({ status: 404, description: 'Order not found' })
-  getOrderDetails(@Query('uuid') uuid: string) {
-    return this.orderService.getOrderById(uuid);
+  getOrderDetails(@Query() dto: GetOrderDetailsDto) {
+    return this.orderService.getOrderById(dto);
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { GetOrderDetailsDto } from './dto/create-order.dto';
 import { randomUUID } from 'crypto';
 @Injectable()
 export class OrderService {
@@ -128,9 +129,9 @@ export class OrderService {
       linkCreated: undefined,
     }));
   }
-  async getOrderById(uuid: string) {
+  async getOrderById(dto: GetOrderDetailsDto) {
     const order = await this.prisma.orderCreation.findUnique({
-      where: { uuid: uuid },
+      where: { uuid: dto.uuid },
       include: {
         linkCreated: true,
         sellerReviews: true,
@@ -138,7 +139,7 @@ export class OrderService {
     });
 
     if (!order) {
-      throw new NotFoundException(`Order with uuid ${uuid} not found`);
+      throw new NotFoundException(`Order with uuid ${dto.uuid} not found`);
     }
 
     return {
