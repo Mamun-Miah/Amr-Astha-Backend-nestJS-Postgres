@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   ParseIntPipe,
   Post,
@@ -13,7 +14,7 @@ import { OrderService } from './order.service';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import type { JwtUser } from 'src/auth/types/jwt-user.type';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 @ApiTags('Order Creation')
 @UseGuards(AuthGuard('jwt'))
 @Controller('user/orders')
@@ -40,12 +41,17 @@ export class OrderController {
   @Get()
   @ApiOperation({ summary: 'Get all orders for a business' })
   @ApiResponse({ status: 200, description: 'Orders retrieved successfully' })
+  @ApiQuery({ name: 'businessId', required: true, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiResponse({ status: 404, description: 'Orders not found' })
   getOrders(
     @Query('businessId', ParseIntPipe) businessId: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @GetUser() user: JwtUser,
   ) {
-    return this.orderService.getOrders(businessId, user.id);
+    return this.orderService.getOrders(businessId, page, limit, user.id);
   }
 
   @Get('details')

@@ -68,7 +68,12 @@ export class OrderService {
   //get orders//
   /////////////
   ////////////
-  async getOrders(businessId: number, userId: number) {
+  async getOrders(
+    businessId: number,
+    userId: number,
+    page: number,
+    limit: number,
+  ) {
     //find userid by business id
     const business = await this.prisma.businessInfo.findUnique({
       where: { id: businessId, userId: userId },
@@ -92,6 +97,9 @@ export class OrderService {
       );
     }
     const orders = await this.prisma.orderCreation.findMany({
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: { createdAt: 'desc' },
       where: {
         businessId: businessId,
       },
@@ -121,13 +129,23 @@ export class OrderService {
         },
       },
     });
-
+    //total page calculation
+    const totalOrders = await this.prisma.orderCreation.count({
+      where: { businessId: businessId },
+    });
+    const totalPages = Math.ceil(totalOrders / limit);
     return orders.map((order) => ({
       ...order,
       sellerReviews: order.sellerReviews[0] || null,
       link: order.linkCreated[0]?.link ?? null,
       linkExpiry: order.linkCreated[0]?.expiry ?? null,
       linkCreated: undefined,
+      meta: {
+        totalOrders,
+        totalPages,
+        currentPage: page,
+        pageSize: limit,
+      },
     }));
   }
   async getOrderById(dto: GetOrderDetailsDto) {
