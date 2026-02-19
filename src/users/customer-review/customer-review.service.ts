@@ -38,7 +38,7 @@ export class CustomerReviewService {
     });
 
     if (!order) {
-      throw new Error('Order not found');
+      throw new NotFoundException('Order not found');
     }
     const getScore = await this.setScoreService.setEvidenceScore(order.id);
     //without COMPLETED_AS_AGREED user got 0 Marks until resolved
@@ -81,7 +81,7 @@ export class CustomerReviewService {
       },
     });
     if (!order) {
-      throw new Error('Order not found');
+      throw new NotFoundException('Order not found');
     }
     const { id: orderId, ...restOrder } = order;
 
@@ -97,7 +97,7 @@ export class CustomerReviewService {
       },
     });
     if (!linkDetails) {
-      throw new Error('Link not found');
+      throw new NotFoundException('Link not found');
     }
     const todayDate = new Date();
     const checkExpiredLink = linkDetails.expiry < todayDate ? true : false;
