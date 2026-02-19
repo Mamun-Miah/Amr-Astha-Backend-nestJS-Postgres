@@ -50,7 +50,14 @@ export class BusinessService {
     if (findUserbyEmail) {
       throw new ConflictException('Email already exists');
     }
+    //find category
+    const findCategory = await this.prisma.businessCategory.findUnique({
+      where: { id: bussinessProfileData.businessCategoryId },
+    });
 
+    if (!findCategory) {
+      throw new NotFoundException('Business category not found');
+    }
     // Create business profile
     const business = await this.prisma.businessInfo.create({
       data: {
