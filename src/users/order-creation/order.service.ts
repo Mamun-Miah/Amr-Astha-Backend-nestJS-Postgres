@@ -124,6 +124,7 @@ export class OrderService {
 
     return orders.map((order) => ({
       ...order,
+      sellerReviews: order.sellerReviews[0] || null,
       link: order.linkCreated[0]?.link ?? null,
       linkExpiry: order.linkCreated[0]?.expiry ?? null,
       linkCreated: undefined,
@@ -144,6 +145,7 @@ export class OrderService {
 
     return {
       ...order,
+      sellerReviews: order.sellerReviews[0] || null,
       link: order.linkCreated[0]?.link ?? null,
       linkExpiry: order.linkCreated[0]?.expiry ?? null,
       linkCreated: undefined,
