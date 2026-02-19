@@ -49,7 +49,7 @@ export class OrderController {
   }
 
   @Get('details')
-  @ApiOperation({ summary: 'Get order details by orderId' })
+  @ApiOperation({ summary: 'Get order details by UUID' })
   @ApiResponse({
     status: 200,
     description: 'Order details retrieved successfully',
