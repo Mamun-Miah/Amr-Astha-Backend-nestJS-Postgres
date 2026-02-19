@@ -75,7 +75,7 @@ export class OrderService {
     limit: number,
   ) {
     //find userid by business id
-    const business = await this.prisma.businessInfo.findUnique({
+    const business = await this.prisma.businessInfo.findFirst({
       where: { id: businessId, userId: userId },
     });
 
@@ -96,13 +96,16 @@ export class OrderService {
         `No orders found for business id ${businessId}`,
       );
     }
+    page = page > 0 ? page : 1;
+    limit = limit > 0 ? limit : 10;
     const orders = await this.prisma.orderCreation.findMany({
-      take: limit,
-      skip: (page - 1) * limit,
-      orderBy: { createdAt: 'desc' },
       where: {
         businessId: businessId,
       },
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: { createdAt: 'desc' },
+
       select: {
         id: true,
         uuid: true,

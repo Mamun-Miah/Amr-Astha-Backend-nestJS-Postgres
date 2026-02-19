@@ -51,7 +51,7 @@ export class OrderController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @GetUser() user: JwtUser,
   ) {
-    return this.orderService.getOrders(businessId, page, limit, user.id);
+    return this.orderService.getOrders(businessId, user.id, page, limit);
   }
 
   @Get('details')
