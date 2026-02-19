@@ -46,4 +46,15 @@ export class OrderController {
   ) {
     return this.orderService.getOrders(businessId, user.id);
   }
+
+  @Get('details')
+  @ApiOperation({ summary: 'Get order details by UUID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Order details retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  getOrderDetails(@Query('orderId') orderId: number) {
+    return this.orderService.getOrderById(orderId);
+  }
 }

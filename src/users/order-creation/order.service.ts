@@ -94,20 +94,58 @@ export class OrderService {
       where: {
         businessId: businessId,
       },
-      include: {
+      select: {
+        id: true,
+        uuid: true,
+        orderDate: true,
+        deliveryDate: true,
+        productName: true,
+        customerName: true,
+        customerEmail: true,
+        customerPhone: true,
+        invoiceNumber: true,
+
         linkCreated: {
           select: {
             link: true,
             expiry: true,
           },
         },
+        sellerReviews: {
+          select: {
+            id: true,
+            review: true,
+            isReviewed: true,
+          },
+        },
       },
     });
+
     return orders.map((order) => ({
       ...order,
       link: order.linkCreated[0]?.link ?? null,
       linkExpiry: order.linkCreated[0]?.expiry ?? null,
       linkCreated: undefined,
     }));
+  }
+  async getOrderById(orderId: number) {
+    const order = await this.prisma.orderCreation.findUnique({
+      where: { id: orderId },
+      include: {
+        linkCreated: true,
+        sellerReviews: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with id ${orderId} not found`);
+    }
+
+    return {
+      ...order,
+      link: order.linkCreated[0]?.link ?? null,
+      linkExpiry: order.linkCreated[0]?.expiry ?? null,
+      linkCreated: undefined,
+    };
   }
 }
