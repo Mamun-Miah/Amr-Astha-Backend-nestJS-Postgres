@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { randomUUID } from 'crypto';
@@ -67,10 +67,32 @@ export class OrderService {
   //get orders//
   /////////////
   ////////////
-  async getOrders(userId: number) {
+  async getOrders(businessId: number, userId: number) {
+    //find userid by business id
+    const business = await this.prisma.businessInfo.findUnique({
+      where: { id: businessId, userId: userId },
+    });
+
+    if (!business) {
+      return new NotFoundException(
+        `Business with id ${businessId} not found for this user`,
+      );
+    }
+    //order find by business id
+    const order = await this.prisma.orderCreation.findMany({
+      where: {
+        businessId: businessId,
+      },
+    });
+
+    if (!order || order.length === 0) {
+      return new NotFoundException(
+        `No orders found for business id ${businessId}`,
+      );
+    }
     const orders = await this.prisma.orderCreation.findMany({
       where: {
-        userId: userId,
+        businessId: businessId,
       },
       include: {
         linkCreated: {

@@ -37,10 +37,13 @@ export class OrderController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all orders for a user' })
+  @ApiOperation({ summary: 'Get all orders for a business' })
   @ApiResponse({ status: 200, description: 'Orders retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Orders not found' })
-  getOrders(@GetUser() user: JwtUser) {
-    return this.orderService.getOrders(user.id);
+  getOrders(
+    @Query('businessId', ParseIntPipe) businessId: number,
+    @GetUser() user: JwtUser,
+  ) {
+    return this.orderService.getOrders(businessId, user.id);
   }
 }
