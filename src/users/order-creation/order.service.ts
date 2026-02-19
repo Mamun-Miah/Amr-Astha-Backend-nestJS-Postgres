@@ -17,7 +17,7 @@ export class OrderService {
     });
 
     if (!business) {
-      throw new Error(`Business with id ${businessId} not found`);
+      throw new NotFoundException(`Business with id ${businessId} not found`);
     }
     //create order
     const order = await this.prisma.orderCreation.create({
