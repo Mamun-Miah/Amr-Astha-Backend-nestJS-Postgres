@@ -17,7 +17,7 @@ async function bootstrap() {
     .setTitle('AmrAstha API Documentation')
     .setDescription('The AmrAstha API documentation')
     .setVersion('1.0')
-    .addCookieAuth('Authorization')
+    .addCookieAuth('Authentication')
     // .addTag('api')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
