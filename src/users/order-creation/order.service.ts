@@ -128,9 +128,9 @@ export class OrderService {
       linkCreated: undefined,
     }));
   }
-  async getOrderById(orderId: number) {
+  async getOrderById(uuid: string) {
     const order = await this.prisma.orderCreation.findUnique({
-      where: { id: orderId },
+      where: { uuid: uuid },
       include: {
         linkCreated: true,
         sellerReviews: true,
@@ -138,7 +138,7 @@ export class OrderService {
     });
 
     if (!order) {
-      throw new NotFoundException(`Order with id ${orderId} not found`);
+      throw new NotFoundException(`Order with uuid ${uuid} not found`);
     }
 
     return {
